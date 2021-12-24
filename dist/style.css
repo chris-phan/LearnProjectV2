@@ -1,0 +1,63 @@
+.smiley {
+    border-top: 5px solid white;
+    border-left: 5px solid white;
+    border-bottom: 5px solid #6d6d6d;
+    border-right: 5px solid #6d6d6d;
+    outline: 2px #6d6d6d solid;
+    width: auto;
+    height: auto;
+    max-width: 30px;
+    max-height: 30px;
+    background-color: #c0c0c0;
+}
+
+.red-num {
+    outline: black solid 3px;
+    margin-left: 3px;
+    background-color: black;
+    width: auto;
+    height: auto;
+    max-width: 21px;
+    max-height: 39px;
+}
+
+#red-num-mine-left {
+    margin-left: 10px;
+}
+
+#red-num-timer-right {
+    margin-right: 10px;
+}
+
+
+.outer-border {
+    border-top: 5px solid white;
+    border-left: 5px solid white;
+    border-bottom: 5px solid #808080;
+    border-right: 5px solid #808080;
+}
+
+#border2 {
+    border: 10px solid #c0c0c0;
+}
+
+#border3 {
+    border-top: 5px solid #6d6d6d;
+    border-left: 5px solid #6d6d6d;
+    border-bottom: 5px solid white;
+    border-right: 5px solid white;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.left {
+    float:left;
+}
+
+.right {
+    float:right;
+}

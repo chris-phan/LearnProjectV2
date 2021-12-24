@@ -1,3 +1,7 @@
+body {
+    background-color: lightblue;
+}
+
 .smiley {
     border-top: 5px solid white;
     border-left: 5px solid white;
@@ -42,6 +46,7 @@
 }
 
 #border3 {
+    padding: 1rem;
     border-top: 5px solid #6d6d6d;
     border-left: 5px solid #6d6d6d;
     border-bottom: 5px solid white;

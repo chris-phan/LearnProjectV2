@@ -9,7 +9,7 @@ const leftTime = document.querySelector("#red-num-timer-left");
 const midTime = document.querySelector("#red-num-timer-mid");
 const rightTime = document.querySelector("#red-num-timer-right");
 
-var time = 990;
+var time = 0;
 var delay = 1000;
 
 

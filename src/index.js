@@ -15,12 +15,12 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCSCBy0iQIERmCCBZsdftpz1kleiDYMjWI",
-  authDomain: "minesweeper-74a91.firebaseapp.com",
-  projectId: "minesweeper-74a91",
-  storageBucket: "minesweeper-74a91.appspot.com",
-  messagingSenderId: "97339507701",
-  appId: "1:97339507701:web:8fe6068b10124d61b596bc"
+    apiKey: "AIzaSyCSCBy0iQIERmCCBZsdftpz1kleiDYMjWI",
+    authDomain: "minesweeper-74a91.firebaseapp.com",
+    projectId: "minesweeper-74a91",
+    storageBucket: "minesweeper-74a91.appspot.com",
+    messagingSenderId: "97339507701",
+    appId: "1:97339507701:web:8fe6068b10124d61b596bc"
 };
 
 // init firebase app

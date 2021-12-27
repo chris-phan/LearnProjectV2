@@ -28,12 +28,12 @@ initializeApp(firebaseConfig);
 
 // init services
 const db = getFirestore();
-let auth = getAuth();
+const auth = getAuth();
 
 
 
 // Global variables
-let difficulty = '';
+var difficulty = '';
 
 
 // Event listeners
@@ -189,3 +189,60 @@ function displayMineCount(numMines) {
         }
     }
 }
+
+
+
+// Code for the timer
+
+//Global variables
+var startTime;
+var interval;
+
+// Starts the timer
+function startTimer() {
+    startTime = Date.now();
+    var time = 0;
+    const delay = 1000;
+
+    interval = setInterval(() => {
+        time++;
+        updateDisplay(time);
+        // console.log('hi');
+    }, delay);
+}
+
+// Stops the timer and returns the end time
+function stopTimer() {
+    clearInterval(interval);
+    return Date.now() - startTime;
+}
+
+// Updates the timer display
+function updateDisplay(time) {
+    const numbers = [];
+    for (let i = 0; i <= 9; i++) {
+        numbers[i] = "../images/red_" + i + ".png";
+    }
+    
+    const leftTime = document.querySelector("#red-num-timer-left");
+    const midTime = document.querySelector("#red-num-timer-mid");
+    const rightTime = document.querySelector("#red-num-timer-right");
+
+    if (!(time > 999)) {
+        rightTime.src = numbers[time % 10];
+        midTime.src = numbers[Math.floor(time / 10) % 10];
+        leftTime.src = numbers[Math.floor(time / 100)];
+    }
+}
+
+// Event listeners
+const startTimeBtn = document.querySelector('#start-timer');
+startTimeBtn.addEventListener('click', () => {
+    startTimer();
+});
+
+const stopTimeBtn = document.querySelector('#stop-timer');
+stopTimeBtn.addEventListener('click', () => {
+    const endTime = stopTimer();
+    console.log(endTime);
+});

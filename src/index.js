@@ -31,7 +31,103 @@ const db = getFirestore();
 let auth = getAuth();
 
 
-// Flag counter
+
+// Global variables
+let difficulty = '';
+
+
+// Event listeners
+
+// Beginner button
+const beginnerDiffBtn = document.querySelector('#diff-beg');
+beginnerDiffBtn.addEventListener('click', () => {
+    difficulty = 'beginner';
+    generateCoverTiles(difficulty);
+});
+
+// Intermediate button
+const intermediateDiffBtn = document.querySelector('#diff-int');
+intermediateDiffBtn.addEventListener('click', () => {
+    difficulty = 'intermediate';
+    generateCoverTiles(difficulty);
+});
+
+// Expert button
+const expertDiffBtn = document.querySelector('#diff-exp');
+expertDiffBtn.addEventListener('click', () => {
+    difficulty = 'expert';
+    generateCoverTiles(difficulty);
+});
+
+// Creates the cover tiles
+// TODO: add custom difficulty option
+function generateCoverTiles(difficulty) {
+    let boardWidth;
+    let boardHeight;
+    if (difficulty === 'beginner') {
+        boardWidth = 9;
+        boardHeight = 9;
+    }
+    else if (difficulty === 'intermediate') {
+        boardWidth = 16;
+        boardHeight = 16;
+    }
+    else if (difficulty === 'expert') {
+        boardWidth = 30;
+        boardHeight = 16;
+    }
+
+    cleanBoard();
+    createCoverTileRows(boardHeight, boardWidth);
+    setCoverTileProperties();
+}
+
+// Clears the board's rows
+function cleanBoard() {
+    const rows = document.querySelectorAll('.tile-row');
+    const length = rows.length;
+    console.log('removing ' + rows.length + ' rows');
+    for (let i = 0; i < length; i++) {
+        rows[i].remove();
+    }
+}
+
+// Creates new divs and adds cover_block images to it
+function createCoverTileRows(boardHeight, boardWidth) {
+    for (let r = 0; r < boardHeight; r++) {
+        const border5 = document.querySelector('#border5');
+        const tileRowDiv = document.createElement('div');
+        tileRowDiv.classList.add('tile-row');
+        border5.appendChild(tileRowDiv);
+        for (let c = 0; c < boardWidth; c++) {
+            const coverTileImg = document.createElement('img');
+            coverTileImg.classList.add('cover-tile');
+            coverTileImg.src = '../images/cover_block.png';
+            tileRowDiv.appendChild(coverTileImg);
+        }
+    }
+}
+
+// Updates mine count and the alternates the image between cover_block and cover_block_flag
+function setCoverTileProperties() {
+    const coverTiles = document.querySelectorAll('.cover-tile');
+    for (let i = 0; i < coverTiles.length; i++) {
+        coverTiles[i].addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+
+            const imgSrc = coverTiles[i].src + "";
+            if (imgSrc.includes('flag')) {
+                coverTiles[i].src = '../images/cover_block.png';
+                numMines++;
+            }
+            else {
+                coverTiles[i].src = '../images/cover_block_flag.png'
+                numMines--;
+            }
+            displayMineCount(numMines);
+        });
+    }
+}
 
 // TODO: input validation: numbers greater than 999
 let numMines = 0;
@@ -43,47 +139,6 @@ mineFormRef.addEventListener('submit', (e) => {
     console.log(numMines);
 
     displayMineCount(numMines);
-});
-
-// Check if mouse is over a cover tile
-let isMouseOverCoverTile = false;
-const coverTileRef = document.querySelector('.cover-tile');
-coverTileRef.addEventListener('pointerover', () => {
-    isMouseOverCoverTile = true;
-    console.log('over');
-});
-
-coverTileRef.addEventListener('pointerleave', () => {
-    isMouseOverCoverTile = false;
-    console.log('leave');
-});
-
-// Check if mouse is over a flag tile
-let isMouseOverFlagTile = false;
-const coverFlagRef = document.querySelector('.flag-tile');
-coverFlagRef.addEventListener('pointerover', () => {
-    isMouseOverFlagTile = true;
-});
-
-coverFlagRef.addEventListener('pointerleave', () => {
-    isMouseOverFlagTile = false;
-});
-
-// If a cover tile is right clicked, the flag count decreases
-// If a flagged tile is right clicked, the flag count increases
-// TODO: change the right clicked image to a flagged/cover tile
-document.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-
-    if (isMouseOverCoverTile) {
-        numMines--;
-        displayMineCount(numMines);
-    }
-    else if (isMouseOverFlagTile) {
-        numMines++;
-        displayMineCount(numMines);
-    }
-
 });
 
 // Changes the displayed flag counter
@@ -107,7 +162,7 @@ function displayMineCount(numMines) {
             document.querySelector('#red-num-mine-right').src = "../images/red_" + digits[0] + ".png";
             document.querySelector('#red-num-mine-mid').src = "../images/minus.png";
             document.querySelector('#red-num-mine-left').src = "../images/red_0.png";
-    
+
         }
         else if (digits.length == 2) {
             document.querySelector('#red-num-mine-right').src = "../images/red_" + digits[0] + ".png";
@@ -120,7 +175,7 @@ function displayMineCount(numMines) {
             document.querySelector('#red-num-mine-right').src = "../images/red_" + digits[0] + ".png";
             document.querySelector('#red-num-mine-mid').src = "../images/red_0.png";
             document.querySelector('#red-num-mine-left').src = "../images/red_0.png";
-    
+
         }
         else if (digits.length == 2) {
             document.querySelector('#red-num-mine-right').src = "../images/red_" + digits[0] + ".png";

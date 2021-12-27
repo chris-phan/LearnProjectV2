@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,47 +8,54 @@
     <title>Minesweeper</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <h1>Minesweeper</h1>
     <br>
+    <div style="padding-bottom: 3rem;">
+        <h2>Difficulty</h2>
+        <button id="diff-beg">Beginner</button>
+        <button id="diff-int">Intermediate</button>
+        <button id="diff-exp">Expert</button>
+        <button id="diff-cus">Custom</button>
+    </div>
 
-    <h2>Difficulty</h2>
-    <button>Beginner</button>
-    <button>Intermediate</button>
-    <button>Expert</button>
     <div class="outer-border">
         <div id="border2">
             <div id="border3">
-                <div id="num-mines">
+                <div class="num-mines">
                     <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-left">
                     <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-mid">
                     <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-right">
-                </div> 
-                <div id="timer">
+                </div>
+                <div class="timer">
                     <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-right">
                     <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-mid">
                     <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-left">
                 </div>
-                <div>
-                    <img src="../images/smiley.png" alt="Smiley" class="center smiley">
+                <div class="smiley">
+                    <img src="../images/smiley.png" alt="Smiley" class="center" id="smiley-img">
                 </div>
             </div>
-            <div>
-
+            <div id="border4">
+                <div id="border5">
+                </div>
             </div>
         </div>
     </div>
-    
+
     <br>
     <form id="user-mines-form">
         <label for="mines">Number of mines</label>
         <input type="number" placeholder="Enter a number" name="mines" required>
     </form>
     <h2>Test tiles</h2>
+    <p>Note: click a difficulty first</p>
     <img src="../images/cover_block.png" class="cover-tile">
-    <img src="../images/cover_block_flag.png" class="flag-tile">
+    <img src="../images/cover_block_flag.png" class="cover-tile">
 
     <script src="timer.js"></script>
-    <script src=bundle.js></script> 
+    <script src=bundle.js></script>
 </body>
+
 </html>

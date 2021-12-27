@@ -2,7 +2,12 @@ body {
     background-color: lightblue;
 }
 
-.smiley {
+div {
+    padding: 0px;
+    margin: 0px;
+}
+
+#smiley-img {
     border-top: 5px solid white;
     border-left: 5px solid white;
     border-bottom: 5px solid #6d6d6d;
@@ -24,15 +29,6 @@ body {
     max-width: 21px;
     max-height: 39px;
 }
-/* 
-#red-num-mine-left {
-    margin-left: 10px;
-} */
-
-/* #red-num-timer-right {
-    margin-right: 10px;
-} */
-
 
 .outer-border {
     border-top: 5px solid white;
@@ -43,6 +39,7 @@ body {
 
 #border2 {
     border: 10px solid #c0c0c0;
+    background-color: #c0c0c0;
 }
 
 #border3 {
@@ -52,6 +49,25 @@ body {
     border-bottom: 5px solid white;
     border-right: 5px solid white;
     background-color: #c0c0c0;
+}
+
+#border4 {
+    border-top: 10px solid #c0c0c0;
+}
+
+#border5 {
+    border-top: 5px solid #6d6d6d;
+    border-left: 5px solid #6d6d6d;
+    border-bottom: 5px solid white;
+    border-right: 5px solid white;
+}
+
+.cover-tile {
+    width: 24px;
+    height: 24px;
+    padding: 0px;
+    margin: 0px;
+    vertical-align: bottom;
 }
 
 .center {

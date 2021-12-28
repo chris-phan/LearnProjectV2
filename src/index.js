@@ -375,3 +375,159 @@ mineFormRef.addEventListener('submit', (e) => {
 
     displayMineCount(numMines);
 });
+
+// Login, Logout, firebase stuff
+
+const loginForm = document.querySelector('.login');
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    console.log("logged in");
+    const email = loginForm.email.value;
+    const password = loginForm.password.value;
+    signInWithEmailAndPassword(auth, email, password)
+        .then((cred) => {
+            const logOutSect = document.querySelector('#logout-section')
+            logOutSect.classList.toggle("hide-private");
+            const navbarItems = document.querySelector('#navbar-items');
+            navbarItems.classList.add("hide-private");
+            console.log('user logged in: ', cred.user);
+            loginForm.reset();
+            loginForm.classList.add("hide-private");
+            
+            const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
+
+            getDoc(userDocRef)
+                .then((doc) => {
+                    let username = doc.data().username;
+                    const welcome = document.querySelector('#welcome-user');
+                    welcome.style.color = 'white';
+                    console.log('username here');
+                    console.log(username);
+                    welcome.innerHTML = 'Welcome ' + username;
+                })
+
+            setDoc(userDocRef, { lastUpdated: serverTimestamp() }, { merge: true });    // updates doc or creates it if it doesn't exist
+            // getDoc(userDocRef)
+            //     .then((doc) => {
+            //         if (typeof doc.data().count === 'undefined') {
+            //             updateDoc(userDocRef, {email: cred.user.email, score: 0});
+            //             location.reload();
+            //         }
+            //     });
+
+            // onSnapshot(userDocRef, (doc) => {
+            //     document.querySelector('#indivNum').innerHTML = doc.data().count;
+            // });
+        })
+        .catch((error) => {
+            console.error(error.message);
+        });
+});
+
+const signUpRef = document.querySelector('.add');
+    signUpRef.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const email = signUpRef.email.value;
+        const password = signUpRef.password.value;
+        const username = signUpRef.username.value;
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((cred) => {
+                const resultMessage = document.querySelector('#resultMessage');
+                resultMessage.style.color = 'green';
+                resultMessage.innerHTML = 'Success!';
+                setTimeout(function(){
+                    const signUpDropDown = document.querySelector('#sign-up-dropdown');
+                    signUpDropDown.classList.toggle("collapsing");
+                    resultMessage.innerHTML = '';
+                },2000);
+
+                signInWithEmailAndPassword(auth, email, password)
+                    .then((cred) => {
+                        const logOutSect = document.querySelector('#logout-section')
+                        logOutSect.classList.toggle("hide-private");
+                        const navbarItems = document.querySelector('#navbar-items');
+                        navbarItems.classList.add("hide-private");
+                        console.log('user logged in: ', cred.user);
+                        loginForm.classList.add("hide-private");
+                        signUpRef.reset();
+                        const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
+
+                        getDoc(userDocRef)
+                            .then((doc) => {
+                                let username = doc.data().username;
+                                const welcome = document.querySelector('#welcome-user');
+                                welcome.style.color = 'white';
+                                console.log('username here');
+                                console.log(username);
+                                welcome.innerHTML = 'Welcome ' + username;
+                            })
+
+                setDoc(userDocRef, { lastUpdated: serverTimestamp() }, { merge: true });    // updates doc or creates it if it doesn't exist
+                getDoc(userDocRef)
+                    .then((doc) => {
+                        if (typeof doc.data().score === 'undefined') {
+                            updateDoc(userDocRef, { count: 0, email: cred.user.email });
+                            location.reload();
+                        }
+                    });
+
+                // onSnapshot(userDocRef, (doc) => {
+                //     document.querySelector('#indivNum').innerHTML = doc.data().count;
+                // });
+            })
+            .catch((error) => {
+                console.error(error.message);
+            });
+
+                
+                // Creates an indivCount document for the user
+                const userDocRef = doc(db, 'scores', cred.user.uid);
+                setDoc(userDocRef, { email: cred.user.email, score: 0,  username: username });
+                signUpRef.reset();
+            })
+            // this catches if email is repeated, 
+            // TODO: make it so that same username is also an error
+            .catch((error) => {
+                const resultMessage = document.querySelector('#resultMessage');
+                resultMessage.style.color = 'red';
+                resultMessage.innerHTML = error.message;
+                signUpRef.reset();
+            })
+    })
+
+const logOutBtn = document.querySelector('#logout');
+logOutBtn.addEventListener('click', (e) => {
+    console.log('here');
+    if (auth.currentUser !== null) {
+        signOut(auth)
+            .then(() => {
+                loginForm.classList.remove("hide-private");
+                const logOutSect = document.querySelector('#logout-section')
+                logOutSect.classList.toggle("hide-private");
+                const navbarItems = document.querySelector('#navbar-items');
+                navbarItems.classList.remove("hide-private");
+                const welcome = document.querySelector('#welcome-user');
+                welcome.style.color = 'white';
+                welcome.innerHTML = '';
+                console.log('Log out successful');
+            })
+            .catch((err) => {
+                console.error(err.message);
+            });
+    }
+});
+
+const signUpDropDown = document.querySelector('#sign-up-dropdown');
+
+const signUpBtn = document.querySelector('#sign-up-button');
+signUpBtn.addEventListener('click', () => {
+    signUpDropDown.classList.toggle("collapse");
+});
+
+const cancelSignUp = document.querySelector('#cancel-signup');
+cancelSignUp.addEventListener('click', () => {
+    const signUpRef = document.querySelector('.add');
+    signUpRef.reset();
+    signUpDropDown.classList.toggle("collapse");
+});

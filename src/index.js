@@ -35,6 +35,7 @@ const auth = getAuth();
 // Global variables
 var difficulty = '';
 var numClicks = 0;
+var mineLocations = [];
 
 // Event listeners
 
@@ -127,10 +128,22 @@ function setCoverTileProperties(totMines) {
         // Whenever a cover tile is clicked, hide it
         // First click code
         coverTiles[i].addEventListener('click', () => {
+            console.log("mines: " + mineLocations)
+
             numClicks++;
             if (numClicks == 1) {
                 setMines(totMines, coverTiles[i]);
                 displayMineCount(totMines);
+                for (let j = 0; j < mineLocations.length; j++) {
+                    coverTiles[mineLocations[j]].addEventListener('click', () => {
+                        coverTiles[mineLocations[j]].src =  '../images/mine_clicked.png';
+                        const allBlanks = document.querySelectorAll('[id^="mine"]');
+                        for (let i = 0; i < allBlanks.length; i++) {
+                            allBlanks[i].style.zIndex = 5;
+                        }
+                        console.log(allBlanks.length);
+                    });
+                }
             }
             coverTiles[i].style.zIndex = -1;
             console.log(coverTiles[i].id);
@@ -230,6 +243,7 @@ function setMines(numMines, firstClickCoverTile) {
         // Generate a random index of the allBlankTiles array to be a mine
         const randomInt = Math.floor(Math.random() * maxRandInt);
         const mine = allBlankTiles[randomInt];
+        mineLocations.push(randomInt);
 
         // Take out the blank tile from the array and decrease the max value that can be randomly generated
         allBlankTiles.splice(randomInt, 1);
@@ -239,6 +253,14 @@ function setMines(numMines, firstClickCoverTile) {
         // Id: mine-tile-row-#-col-#
         mine.id = 'mine-' + mine.id;
         mine.src = '../images/mine.png';
+
+        // mine.addEventListener('click',  () => {
+        //     const allBlanks = document.querySelectorAll('[id^="mine"]');
+        //     for (let i = 0; i < allBlanks.length; i++) {
+        //         allBlanks[i].style.zIndex = 5;
+        //     }
+        //     console.log(allBlanks.length);
+        // });
     }
 }
 

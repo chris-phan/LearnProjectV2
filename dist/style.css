@@ -43,11 +43,13 @@ img {
     border-left: 5px solid white;
     border-bottom: 5px solid #808080;
     border-right: 5px solid #808080;
+    display: table;
 }
 
 #border2 {
     border: 10px solid #c0c0c0;
     background-color: #c0c0c0;
+    display: table;
 }
 
 #border3 {
@@ -57,6 +59,7 @@ img {
     border-bottom: 5px solid white;
     border-right: 5px solid white;
     background-color: #c0c0c0;
+    display: table-row;
 }
 
 #border4 {
@@ -64,8 +67,6 @@ img {
 }
 
 #border5 {
-    margin-left: auto;
-    margin-right: auto;
     border-top: 5px solid #6d6d6d;
     border-left: 5px solid #6d6d6d;
     border-bottom: 5px solid white;

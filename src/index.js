@@ -338,6 +338,8 @@ const smileyBtn = document.querySelector('#smiley-img');
 smileyBtn.addEventListener('mousedown', () => {
     smileyBtn.style.borderColor = "gray";
     smileyBtn.style.borderWidth = "wide";
+    generateCoverTiles(difficulty);
+    numClicks = 0;
 })
 smileyBtn.addEventListener('mouseup', () => {
     smileyBtn.style.borderColor = "";

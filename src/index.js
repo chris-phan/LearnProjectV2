@@ -35,7 +35,6 @@ const auth = getAuth();
 // Global variables
 var difficulty = '';
 var numClicks = 0;
-var mineLocations = [];
 
 // Event listeners
 
@@ -108,46 +107,44 @@ function cleanBoard() {
 function setCoverTileProperties(totMines) {
     const coverTiles = document.querySelectorAll('.cover-tile');
     for (let i = 0; i < coverTiles.length; i++) {
+        const imgSrc = coverTiles[i].src + '';
 
         // Updates mine count and the alternates the image between cover_block and cover_block_flag
-        const imgSrc = coverTiles[i].src + '';
         coverTiles[i].addEventListener('contextmenu', (e) => {
             e.preventDefault();
 
+            const imgSrc = coverTiles[i].src + '';
+            console.log(imgSrc);
             if (imgSrc.includes('flag')) {
                 coverTiles[i].src = '../images/cover_block.png';
                 numMines++;
+                console.log('here')
             }
             else {
                 coverTiles[i].src = '../images/cover_block_flag.png'
                 numMines--;
+                console.log('else', coverTiles[i]);
             }
             displayMineCount(numMines);
         });
 
-        // Whenever a cover tile is clicked, hide it
+        // Whenever a cover tile that is not over a mine is clicked, hide it
         // First click code
-        coverTiles[i].addEventListener('click', () => {
-            console.log("mines: " + mineLocations)
-
-            numClicks++;
-            if (numClicks == 1) {
-                setMines(totMines, coverTiles[i]);
-                displayMineCount(totMines);
-                for (let j = 0; j < mineLocations.length; j++) {
-                    coverTiles[mineLocations[j]].addEventListener('click', () => {
-                        coverTiles[mineLocations[j]].src =  '../images/mine_clicked.png';
-                        const allBlanks = document.querySelectorAll('[id^="mine"]');
-                        for (let i = 0; i < allBlanks.length; i++) {
-                            allBlanks[i].style.zIndex = 5;
-                        }
-                        console.log(allBlanks.length);
-                    });
+        if (!imgSrc.includes('mine')) {
+            coverTiles[i].addEventListener('click', () => {
+                const imgSrc = coverTiles[i].src + '';
+                if (!imgSrc.includes('flag')) {
+                    numClicks++;
+                    if (numClicks == 1) {
+                        setMines(totMines, coverTiles[i]);
+                        setMineProperties();
+                        displayMineCount(totMines);
+                    }
+                    coverTiles[i].style.zIndex = -1;
+                    console.log(coverTiles[i].id);
                 }
-            }
-            coverTiles[i].style.zIndex = -1;
-            console.log(coverTiles[i].id);
-        });
+            });
+        }
 
         // When the mouse is held down and over a cover tile, switch it to a blank tile
         // When the mouse is held down and leaves a cover tile, switch it back to a cover tile
@@ -229,7 +226,7 @@ function displayMineCount(numMines) {
 function setMines(numMines, firstClickCoverTile) {
     // Gets all the blank tiles, converts it from a NodeList to an array
     const allBlankTiles = Array.from(document.querySelectorAll('[id^="tile-row"]'));
-    
+
     // Remove the first cover tile that was clicked from the array of possible mine locations
     // substring(6) is used to remove 'cover-' from the id
     const coverTileId = firstClickCoverTile.id + '';
@@ -243,7 +240,6 @@ function setMines(numMines, firstClickCoverTile) {
         // Generate a random index of the allBlankTiles array to be a mine
         const randomInt = Math.floor(Math.random() * maxRandInt);
         const mine = allBlankTiles[randomInt];
-        mineLocations.push(randomInt);
 
         // Take out the blank tile from the array and decrease the max value that can be randomly generated
         allBlankTiles.splice(randomInt, 1);
@@ -253,14 +249,31 @@ function setMines(numMines, firstClickCoverTile) {
         // Id: mine-tile-row-#-col-#
         mine.id = 'mine-' + mine.id;
         mine.src = '../images/mine.png';
+    }
+}
 
-        // mine.addEventListener('click',  () => {
-        //     const allBlanks = document.querySelectorAll('[id^="mine"]');
-        //     for (let i = 0; i < allBlanks.length; i++) {
-        //         allBlanks[i].style.zIndex = 5;
-        //     }
-        //     console.log(allBlanks.length);
-        // });
+// Properties of mine related tiles
+function setMineProperties() {
+    const mines = document.querySelectorAll('[id^="mine"]');
+    for (let i = 0; i < mines.length; i++) {
+        
+        // Get all the cover tiles above mines, substring(5) is used to remove 'mine-'
+        const mineCoverTileId = 'cover-' + mines[i].id.substring(5);
+        const coverTile = document.querySelector('#' + mineCoverTileId);
+        coverTile.addEventListener('click', () => {
+            mines[i].src = '../images/mine_clicked.png';
+            coverTile.style.zIndex = -1;
+            numClicks++;
+            showAllMines();
+        });
+    }
+}
+
+// Reveals the location of all the mines
+function showAllMines() {
+    const allMines = document.querySelectorAll('[id^="mine"]');
+    for (let i = 0; i < allMines.length; i++) {
+        allMines[i].style.zIndex = 5;
     }
 }
 
@@ -379,11 +392,11 @@ stopTimeBtn.addEventListener('click', () => {
 
 const showMinesBtn = document.querySelector('#show-mines');
 showMinesBtn.addEventListener('click', () => {
-    const allBlanks = document.querySelectorAll('[id^="mine"]');
-    for (let i = 0; i < allBlanks.length; i++) {
-        allBlanks[i].style.zIndex = 5;
+    const allMines = document.querySelectorAll('[id^="mine"]');
+    for (let i = 0; i < allMines.length; i++) {
+        allMines[i].style.zIndex = 5;
     }
-    console.log(allBlanks.length);
+    console.log(allMines.length);
 });
 
 // TODO: input validation: numbers greater than 999
@@ -415,7 +428,7 @@ loginForm.addEventListener('submit', (e) => {
             console.log('user logged in: ', cred.user);
             loginForm.reset();
             loginForm.classList.add("hide-private");
-            
+
             const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
 
             getDoc(userDocRef)
@@ -447,76 +460,76 @@ loginForm.addEventListener('submit', (e) => {
 });
 
 const signUpRef = document.querySelector('.add');
-    signUpRef.addEventListener('submit', (e) => {
-        e.preventDefault();
+signUpRef.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-        const email = signUpRef.email.value;
-        const password = signUpRef.password.value;
-        const username = signUpRef.username.value;
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((cred) => {
-                const resultMessage = document.querySelector('#resultMessage');
-                resultMessage.style.color = 'green';
-                resultMessage.innerHTML = 'Success!';
-                setTimeout(function(){
-                    const signUpDropDown = document.querySelector('#sign-up-dropdown');
-                    signUpDropDown.classList.toggle("collapsing");
-                    resultMessage.innerHTML = '';
-                },2000);
+    const email = signUpRef.email.value;
+    const password = signUpRef.password.value;
+    const username = signUpRef.username.value;
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((cred) => {
+            const resultMessage = document.querySelector('#resultMessage');
+            resultMessage.style.color = 'green';
+            resultMessage.innerHTML = 'Success!';
+            setTimeout(function () {
+                const signUpDropDown = document.querySelector('#sign-up-dropdown');
+                signUpDropDown.classList.toggle("collapsing");
+                resultMessage.innerHTML = '';
+            }, 2000);
 
-                signInWithEmailAndPassword(auth, email, password)
-                    .then((cred) => {
-                        const logOutSect = document.querySelector('#logout-section')
-                        logOutSect.classList.toggle("hide-private");
-                        const navbarItems = document.querySelector('#navbar-items');
-                        navbarItems.classList.add("hide-private");
-                        console.log('user logged in: ', cred.user);
-                        loginForm.classList.add("hide-private");
-                        signUpRef.reset();
-                        const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
+            signInWithEmailAndPassword(auth, email, password)
+                .then((cred) => {
+                    const logOutSect = document.querySelector('#logout-section')
+                    logOutSect.classList.toggle("hide-private");
+                    const navbarItems = document.querySelector('#navbar-items');
+                    navbarItems.classList.add("hide-private");
+                    console.log('user logged in: ', cred.user);
+                    loginForm.classList.add("hide-private");
+                    signUpRef.reset();
+                    const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
 
-                        getDoc(userDocRef)
-                            .then((doc) => {
-                                let username = doc.data().username;
-                                const welcome = document.querySelector('#welcome-user');
-                                welcome.style.color = 'white';
-                                console.log('username here');
-                                console.log(username);
-                                welcome.innerHTML = 'Welcome ' + username;
-                            })
+                    getDoc(userDocRef)
+                        .then((doc) => {
+                            let username = doc.data().username;
+                            const welcome = document.querySelector('#welcome-user');
+                            welcome.style.color = 'white';
+                            console.log('username here');
+                            console.log(username);
+                            welcome.innerHTML = 'Welcome ' + username;
+                        })
 
-                setDoc(userDocRef, { lastUpdated: serverTimestamp() }, { merge: true });    // updates doc or creates it if it doesn't exist
-                getDoc(userDocRef)
-                    .then((doc) => {
-                        if (typeof doc.data().score === 'undefined') {
-                            updateDoc(userDocRef, { count: 0, email: cred.user.email });
-                            location.reload();
-                        }
-                    });
+                    setDoc(userDocRef, { lastUpdated: serverTimestamp() }, { merge: true });    // updates doc or creates it if it doesn't exist
+                    getDoc(userDocRef)
+                        .then((doc) => {
+                            if (typeof doc.data().score === 'undefined') {
+                                updateDoc(userDocRef, { count: 0, email: cred.user.email });
+                                location.reload();
+                            }
+                        });
 
-                // onSnapshot(userDocRef, (doc) => {
-                //     document.querySelector('#indivNum').innerHTML = doc.data().count;
-                // });
-            })
-            .catch((error) => {
-                console.error(error.message);
-            });
+                    // onSnapshot(userDocRef, (doc) => {
+                    //     document.querySelector('#indivNum').innerHTML = doc.data().count;
+                    // });
+                })
+                .catch((error) => {
+                    console.error(error.message);
+                });
 
-                
-                // Creates an indivCount document for the user
-                const userDocRef = doc(db, 'scores', cred.user.uid);
-                setDoc(userDocRef, { email: cred.user.email, score: 0,  username: username });
-                signUpRef.reset();
-            })
-            // this catches if email is repeated, 
-            // TODO: make it so that same username is also an error
-            .catch((error) => {
-                const resultMessage = document.querySelector('#resultMessage');
-                resultMessage.style.color = 'red';
-                resultMessage.innerHTML = error.message;
-                signUpRef.reset();
-            })
-    })
+
+            // Creates an indivCount document for the user
+            const userDocRef = doc(db, 'scores', cred.user.uid);
+            setDoc(userDocRef, { email: cred.user.email, score: 0, username: username });
+            signUpRef.reset();
+        })
+        // this catches if email is repeated, 
+        // TODO: make it so that same username is also an error
+        .catch((error) => {
+            const resultMessage = document.querySelector('#resultMessage');
+            resultMessage.style.color = 'red';
+            resultMessage.innerHTML = error.message;
+            signUpRef.reset();
+        })
+})
 
 const logOutBtn = document.querySelector('#logout');
 logOutBtn.addEventListener('click', (e) => {

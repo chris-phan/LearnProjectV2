@@ -262,7 +262,7 @@ function setMineProperties() {
         const mineCoverTileId = 'cover-' + mines[i].id.substring(5);
         const coverTile = document.querySelector('#' + mineCoverTileId);
         coverTile.addEventListener('click', () => {
-            stopTimer();
+            stopTimer();  // stops time when mine is pressed
             mines[i].src = '../images/mine_clicked.png';
             coverTile.style.zIndex = -1;
             numClicks++;

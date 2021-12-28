@@ -342,6 +342,14 @@ smileyBtn.addEventListener('mousedown', () => {
     smileyBtn.style.borderWidth = "wide";
     generateCoverTiles(difficulty);
     numClicks = 0;
+
+    // sets timer to 000
+    const leftTime = document.querySelector("#red-num-timer-left");
+    const midTime = document.querySelector("#red-num-timer-mid");
+    const rightTime = document.querySelector("#red-num-timer-right");
+    leftTime.src = '../images/red_0.png';
+    midTime.src = '../images/red_0.png';
+    rightTime.src = '../images/red_0.png';
 })
 smileyBtn.addEventListener('mouseup', () => {
     smileyBtn.style.borderColor = "";

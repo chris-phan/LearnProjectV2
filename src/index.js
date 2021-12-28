@@ -136,6 +136,7 @@ function setCoverTileProperties(totMines) {
                 if (!imgSrc.includes('flag')) {
                     numClicks++;
                     if (numClicks == 1) {
+                        startTimer();    // starts time when firs tile is pressed
                         setMines(totMines, coverTiles[i]);
                         setMineProperties();
                         displayMineCount(totMines);
@@ -261,6 +262,7 @@ function setMineProperties() {
         const mineCoverTileId = 'cover-' + mines[i].id.substring(5);
         const coverTile = document.querySelector('#' + mineCoverTileId);
         coverTile.addEventListener('click', () => {
+            stopTimer();
             mines[i].src = '../images/mine_clicked.png';
             coverTile.style.zIndex = -1;
             numClicks++;

@@ -120,65 +120,71 @@ function cleanBoard() {
 function setCoverTileProperties(totMines) {
     const coverTiles = document.querySelectorAll('.cover-tile');
     for (let i = 0; i < coverTiles.length; i++) {
-        const imgSrc = coverTiles[i].src + '';
 
         // Updates mine count and the alternates the image between cover_block and cover_block_flag
         coverTiles[i].addEventListener('contextmenu', (e) => {
             e.preventDefault();
 
-            const imgSrc = coverTiles[i].src + '';
-            console.log(imgSrc);
-            if (imgSrc.includes('flag')) {
+            if (coverTiles[i].classList.contains('flag')) {
                 coverTiles[i].src = '../images/cover_block.png';
+                coverTiles[i].classList.remove('flag');
                 numMines++;
             }
             else {
                 coverTiles[i].src = '../images/cover_block_flag.png'
+                coverTiles[i].classList.add('flag');
                 numMines--;
             }
             displayMineCount(numMines);
         });
 
         // Whenever a cover tile that is not over a mine is clicked, hide it
-        // First click code
-        if (!imgSrc.includes('mine')) {
-            coverTiles[i].addEventListener('mouseup', () => {
-                const imgSrc = coverTiles[i].src + '';
-                if (!imgSrc.includes('flag')) {
-                    numClicks++;
-                    if (numClicks == 1) {
-                        startTimer();    // starts time when firs tile is pressed
-                        setMines(totMines, coverTiles[i]);
-                        setMineProperties();
-                        setNumberTiles();
-                        displayMineCount(totMines);
-                    }
-                    coverTiles[i].style.zIndex = -1;
-                    console.log(coverTiles[i].id);
+        coverTiles[i].addEventListener('mouseup', (e) => {
+            if (!coverTiles[i].classList.contains('flag') && e.button == 0) {
+                numClicks++;
+                
+                // On first click
+                if (numClicks == 1) {
+                    startTimer();
+                    setMines(totMines, coverTiles[i]);
+                    setMineProperties();
+                    setNumberTiles();
+                    setNumberTileProperties();
+                    displayMineCount(totMines);
                 }
-            });
-        }
+
+                // Reveal all mines if a cover tile above a mine has been clicked
+                if (coverTiles[i].classList.contains('mine')) {
+                    stopTimer();
+                    // substring(6) to get rid of 'cover-' to get 'row-#-col-#'
+                    const mineId = 'mine-' + coverTiles[i].id.substring(6);
+                    const mine = document.querySelector('#' + mineId);
+                    mine.src = '../images/mine_clicked.png';
+                    showAllMines();
+                }
+
+                coverTiles[i].style.zIndex = -1;
+                console.log(coverTiles[i].src);
+            }
+        });
 
         // When the mouse is held down and over a cover tile, switch it to a blank tile
         // When the mouse is held down and leaves a cover tile, switch it back to a cover tile
-        if (!imgSrc.includes('flag')) {
             coverTiles[i].addEventListener('mousedown', (e) => {
-                // console.log('mouseover');
-                if (e.button == 0) {
+                if (e.button == 0 && !coverTiles[i].classList.contains('flag')) {
                     coverTiles[i].src = '../images/tile_0.png';
                 }
             });
             coverTiles[i].addEventListener('mouseover', () => {
-                if (mousedown == true) {
+                if (mousedown == true && !coverTiles[i].classList.contains('flag')) {
                     coverTiles[i].src = '../images/tile_0.png';
                 }
             });
             coverTiles[i].addEventListener('mouseleave', () => {
-                if (coverTiles[i].src.includes('tile')) {
+                if (coverTiles[i].src.includes('tile') && !coverTiles[i].classList.contains('flag')) {
                     coverTiles[i].src = '../images/cover_block.png';
                 }
             });
-        }
     }
 }
 
@@ -258,6 +264,7 @@ function setMines(numMines, firstClickCoverTile) {
         // Change the tile's id to indicate that it is a mine
         // Id: mine-tile-row-#-col-#
         mine.id = 'mine-' + mine.id;
+        mine.classList.add('mine');
         mine.src = '../images/mine.png';
     }
 }
@@ -267,15 +274,14 @@ function setMineProperties() {
     const mines = document.querySelectorAll('[id^="mine"]');
     for (let i = 0; i < mines.length; i++) {
 
-        // Get all the cover tiles above mines, substring(5) is used to remove 'mine-'
+        // Get all the cover tiles above mines and add them to the mine class, substring(5) is used to remove 'mine-'
         const mineCoverTileId = 'cover-' + mines[i].id.substring(5);
         const coverTile = document.querySelector('#' + mineCoverTileId);
-        coverTile.addEventListener('click', () => {
-            stopTimer();  // stops time when mine is pressed
-            mines[i].src = '../images/mine_clicked.png';
-            coverTile.style.zIndex = -1;
-            numClicks++;
-            showAllMines();
+        coverTile.classList.add('mine');
+
+        // Prevent right clicking on mines
+        mines[i].addEventListener('contextmenu', (e) => {
+            e.preventDefault(); s
         });
     }
 }
@@ -422,6 +428,16 @@ function increaseNumberVal(numberTile) {
     const curValue = Number(numberTile.src.substring(numberTile.src.indexOf('tile_') + 5, numberTile.src.indexOf('.png')));
     const newValue = curValue + 1;
     numberTile.src = '../images/tile_' + newValue + '.png';
+}
+
+// Properties of number tiles
+function setNumberTileProperties() {
+    const numberTiles = document.querySelectorAll('[id^="tile"]');
+    for (let i = 0; i < numberTiles.length; i++) {
+        numberTiles[i].addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    }
 }
 
 // Attaches event listeners to the smiley button

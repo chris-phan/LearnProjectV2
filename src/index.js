@@ -174,9 +174,19 @@ function setCoverTileProperties(totMines) {
                     mine.src = '../images/mine_clicked.png';
                     showAllMines();
                 }
-                coverTiles[i].classList.add('revealed'); // Hanson
-                checkWin();
-                coverTiles[i].style.zIndex = -1;
+
+                // hanson
+                // .substring(6) removes cover-
+                const tile = document.querySelector('#' + coverTiles[i].id.substring(6)); 
+                if (tile.src.includes('tile_0.png')) {
+                    chainReveal(tile);
+                    checkWin();
+                } else {
+                    coverTiles[i].classList.add('revealed');
+                    coverTiles[i].style.zIndex = -1;
+                    checkWin();
+                }
+
                 console.log(coverTiles[i].src);
             }
         });
@@ -201,6 +211,91 @@ function setCoverTileProperties(totMines) {
     }
 }
 
+// hanson
+// Reveals all empty pockets that connect to first click
+function chainReveal(tile) {
+
+    // base case, all adjacent are revealed numbers or reached edge
+    const coverTile = document.querySelector('#cover-' + tile.id);
+    coverTile.classList.add('revealed');
+    coverTile.style.zIndex = -1;
+
+    // t: top,  m: middle,  b: bottom,  l: left,   r: right
+    const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
+
+    for (let i = 0; i < pos.length; i++) {
+
+        const checkTile = getAdjacentTile(tile, pos[i]);
+        if (checkTile === null) {
+
+            continue;
+        }
+        console.log(checkTile.id);
+        const checkCoverTile = document.querySelector('#cover-' + checkTile.id);
+        if (checkCoverTile.classList.contains('revealed')) {
+
+            continue;
+        }
+        
+        if (checkTile.src.includes('tile_0.png')) {
+            chainReveal(checkTile);
+        } else {
+            checkCoverTile.classList.add('revealed');
+            checkCoverTile.style.zIndex = -1;
+        }
+    }
+
+    return;
+
+}
+
+// hanson
+function getAdjacentTile(tile, pos) {
+    const tileRowNum = Number(tile.id.substring(tile.id.indexOf('row-') + 4, tile.id.indexOf('-col-')));
+    const tileColNum = Number(tile.id.substring(tile.id.indexOf('col-') + 4));
+
+    let nextTileRowNum;
+    let nextTileColNum;
+
+    switch (pos) {
+        case 'tl':
+            nextTileRowNum = tileRowNum - 1;
+            nextTileColNum = tileColNum - 1;
+            break;
+        case 'tm':
+            nextTileRowNum = tileRowNum - 1;
+            nextTileColNum = tileColNum;
+            break;
+        case 'tr':
+            nextTileRowNum = tileRowNum - 1;
+            nextTileColNum = tileColNum + 1;
+            break;
+        case 'ml':
+            nextTileRowNum = tileRowNum;
+            nextTileColNum = tileColNum - 1;
+            break;
+        case 'mr':
+            nextTileRowNum = tileRowNum;
+            nextTileColNum = tileColNum + 1;
+            break;
+        case 'bl':
+            nextTileRowNum = tileRowNum + 1;
+            nextTileColNum = tileColNum - 1;
+            break;
+        case 'bm':
+            nextTileRowNum = tileRowNum + 1;
+            nextTileColNum = tileColNum;
+            break;
+        case 'br':
+            nextTileRowNum = tileRowNum + 1;
+            nextTileColNum = tileColNum + 1;
+            break;
+        default:
+            console.log('error in switch statement');
+    }
+
+    return document.querySelector('#tile-row-' + nextTileRowNum + '-col-' + nextTileColNum);
+}
 
 // Changes the displayed flag counter
 // TODO: refactor this, probably can shorten it by a lot
@@ -373,7 +468,7 @@ function setNumberTiles() {
     const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
     for (let i = 0; i < mines.length; i++) {
         for (let j = 0; j < pos.length; j++) {
-            const numberTile = getAdjacentTileID(mines[i], pos[j]);
+            const numberTile = getAdjacentMineTileID(mines[i], pos[j]);
             if (numberTile === null || numberTile.src.includes('mine')) {
                 continue;
             }
@@ -390,7 +485,7 @@ function setNumberTiles() {
 //     1 * * *
 //     2 * * *
 //       0 1 2
-function getAdjacentTileID(mine, pos) {
+function getAdjacentMineTileID(mine, pos) {
     // Parses the mine id to get the row and column number
     const mineRowNum = Number(mine.id.substring(mine.id.indexOf('row-') + 4, mine.id.indexOf('-col-')));
     const mineColNum = Number(mine.id.substring(mine.id.indexOf('col-') + 4));
@@ -483,7 +578,16 @@ function setSmileyProperties() {
         generateCoverTiles(difficulty);
         numClicks = 0;
         lost = false; // hanson
-
+        if (difficulty === 'beginner') {
+            displayMineCount(10);
+        }
+        else if (difficulty === 'intermediate') {
+            displayMineCount(40);
+        }
+        else if (difficulty === 'expert') {
+            displayMineCount(99);
+        }
+        
         stopTimer();
         resetTimer();
     });
@@ -497,11 +601,11 @@ function checkWin() {
     if (!lost) {
         var tilesRevealed = document.getElementsByClassName('revealed').length;
         
-        if (difficulty === 'beginner' && tilesRevealed == 71) { // 81 - 10
+        if (difficulty === 'beginner' && (tilesRevealed) == 71) { // 81 - 10
             win(); 
-        } else if (difficulty === 'intermediate' && tilesRevealed == 216) { // 256 - 40
+        } else if (difficulty === 'intermediate' && (tilesRevealed) == 216) { // 256 - 40
             win();
-        } else if (difficulty === 'expert' && tilesRevealed == 381) { // 480 - 99
+        } else if (difficulty === 'expert' && (tilesRevealed) == 381) { // 480 - 99
             win();
         }
     }

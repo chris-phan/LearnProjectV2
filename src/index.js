@@ -36,6 +36,7 @@ const auth = getAuth();
 var difficulty = 'beginner';
 var numClicks = 0;
 var mousedown;
+var lost = false; // hanson
 
 // Document event listeners
 // Used to switch cover tiles to blank tiles temporarily when left click is held down
@@ -53,6 +54,7 @@ document.addEventListener('mouseup', () => {
 // Onload:
 generateCoverTiles('beginner');
 setSmileyProperties();
+displayMineCount(10); // hanson
 
 // Beginner button
 const beginnerDiffBtn = document.querySelector('#diff-beg');
@@ -60,6 +62,9 @@ beginnerDiffBtn.addEventListener('click', () => {
     difficulty = 'beginner';
     generateCoverTiles(difficulty);
     numClicks = 0;
+    resetTimer(); // hanson
+    stopTimer();
+    displayMineCount(10);
 });
 
 // Intermediate button
@@ -68,6 +73,9 @@ intermediateDiffBtn.addEventListener('click', () => {
     difficulty = 'intermediate';
     generateCoverTiles(difficulty);
     numClicks = 0;
+    resetTimer(); // hanson
+    stopTimer();
+    displayMineCount(40);
 });
 
 // Expert button
@@ -76,6 +84,9 @@ expertDiffBtn.addEventListener('click', () => {
     difficulty = 'expert';
     generateCoverTiles(difficulty);
     numClicks = 0;
+    resetTimer(); // hanson
+    stopTimer();
+    displayMineCount(99);
 });
 
 // Creates the cover tiles
@@ -157,12 +168,14 @@ function setCoverTileProperties(totMines) {
                 if (coverTiles[i].classList.contains('mine')) {
                     stopTimer();
                     // substring(6) to get rid of 'cover-' to get 'row-#-col-#'
+                    lost = true; // hanson
                     const mineId = 'mine-' + coverTiles[i].id.substring(6);
                     const mine = document.querySelector('#' + mineId);
                     mine.src = '../images/mine_clicked.png';
                     showAllMines();
                 }
-
+                coverTiles[i].classList.add('revealed'); // Hanson
+                checkWin();
                 coverTiles[i].style.zIndex = -1;
                 console.log(coverTiles[i].src);
             }
@@ -256,6 +269,7 @@ function setMines(numMines, firstClickCoverTile) {
         // Generate a random index of the allBlankTiles array to be a mine
         const randomInt = Math.floor(Math.random() * maxRandInt);
         const mine = allBlankTiles[randomInt];
+        console.log(randomInt); // hanson
 
         // Take out the blank tile from the array and decrease the max value that can be randomly generated
         allBlankTiles.splice(randomInt, 1);
@@ -468,10 +482,38 @@ function setSmileyProperties() {
         smileyBtn.classList.add('smiley-img-idle');
         generateCoverTiles(difficulty);
         numClicks = 0;
+        lost = false; // hanson
 
         stopTimer();
         resetTimer();
     });
+}
+
+// Hanson
+// Code to check win condition
+// getElementByClassName returns array of everything in that class
+function checkWin() {
+
+    if (!lost) {
+        var tilesRevealed = document.getElementsByClassName('revealed').length;
+        
+        if (difficulty === 'beginner' && tilesRevealed == 71) { // 81 - 10
+            win(); 
+        } else if (difficulty === 'intermediate' && tilesRevealed == 216) { // 256 - 40
+            win();
+        } else if (difficulty === 'expert' && tilesRevealed == 381) { // 480 - 99
+            win();
+        }
+    }
+
+}
+
+// hanson
+// Events after win condition is met
+function win() {
+    stopTimer(); // this returns time (use it with firebase)
+    const smileyBtn = document.querySelector('#smiley-img');
+    smileyBtn.src = '../images/win.png';
 }
 
 // Code for the timer

@@ -15,16 +15,27 @@ img {
     user-select: none;
 }
 
-#smiley-img {
-    border-top: 5px solid white;
-    border-left: 5px solid white;
-    border-bottom: 5px solid #6d6d6d;
-    border-right: 5px solid #6d6d6d;
+.smiley-img-idle {
+    border-top: 3px solid white;
+    border-left: 3px solid white;
+    border-bottom: 3px solid #6d6d6d;
+    border-right: 3px solid #6d6d6d;
     outline: 2px #6d6d6d solid;
     width: auto;
     height: auto;
-    max-width: 30px;
-    max-height: 30px;
+    max-width: 38px;
+    max-height: 38px;
+    background-color: #c0c0c0;
+}
+
+.smiley-img-pressed {
+    border-top: 3px solid #6d6d6d;
+    border-left: 3px solid #6d6d6d;
+    outline: 2px #6d6d6d solid;
+    width: auto;
+    height: auto;
+    max-width: 38px;
+    max-height: 38px;
     background-color: #c0c0c0;
 }
 

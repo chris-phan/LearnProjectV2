@@ -33,10 +33,26 @@ const auth = getAuth();
 
 
 // Global variables
-var difficulty = '';
+var difficulty = 'beginner';
 var numClicks = 0;
+var mousedown;
 
-// Event listeners
+// Document event listeners
+// Used to switch cover tiles to blank tiles temporarily when left click is held down
+// e.button: 0 = left click, 1 = middle click, 2 = right click
+document.addEventListener('mousedown', (e) => {
+    if (e.button == 0) {
+        mousedown = true;
+    }
+});
+document.addEventListener('mouseup', () => {
+    mousedown = false;
+});
+
+
+// Onload:
+generateCoverTiles('beginner');
+setSmileyProperties();
 
 // Beginner button
 const beginnerDiffBtn = document.querySelector('#diff-beg');
@@ -65,9 +81,6 @@ expertDiffBtn.addEventListener('click', () => {
 // Creates the cover tiles
 // TODO: add custom difficulty option
 function generateCoverTiles(difficulty) {
-    // Show the board
-    document.querySelector('#border4').hidden = false;
-
     let boardWidth;
     let boardHeight;
     let totMines;
@@ -118,12 +131,10 @@ function setCoverTileProperties(totMines) {
             if (imgSrc.includes('flag')) {
                 coverTiles[i].src = '../images/cover_block.png';
                 numMines++;
-                console.log('here')
             }
             else {
                 coverTiles[i].src = '../images/cover_block_flag.png'
                 numMines--;
-                console.log('else', coverTiles[i]);
             }
             displayMineCount(numMines);
         });
@@ -131,7 +142,7 @@ function setCoverTileProperties(totMines) {
         // Whenever a cover tile that is not over a mine is clicked, hide it
         // First click code
         if (!imgSrc.includes('mine')) {
-            coverTiles[i].addEventListener('click', () => {
+            coverTiles[i].addEventListener('mouseup', () => {
                 const imgSrc = coverTiles[i].src + '';
                 if (!imgSrc.includes('flag')) {
                     numClicks++;
@@ -139,6 +150,7 @@ function setCoverTileProperties(totMines) {
                         startTimer();    // starts time when firs tile is pressed
                         setMines(totMines, coverTiles[i]);
                         setMineProperties();
+                        setNumberTiles();
                         displayMineCount(totMines);
                     }
                     coverTiles[i].style.zIndex = -1;
@@ -149,22 +161,20 @@ function setCoverTileProperties(totMines) {
 
         // When the mouse is held down and over a cover tile, switch it to a blank tile
         // When the mouse is held down and leaves a cover tile, switch it back to a cover tile
-        let mousedown;
-        document.addEventListener('mousedown', () => {
-            mousedown = true;
-        });
-        document.addEventListener('mouseup', () => {
-            mousedown = false;
-        });
-
         if (!imgSrc.includes('flag')) {
+            coverTiles[i].addEventListener('mousedown', (e) => {
+                // console.log('mouseover');
+                if (e.button == 0) {
+                    coverTiles[i].src = '../images/tile_0.png';
+                }
+            });
             coverTiles[i].addEventListener('mouseover', () => {
                 if (mousedown == true) {
                     coverTiles[i].src = '../images/tile_0.png';
                 }
             });
             coverTiles[i].addEventListener('mouseleave', () => {
-                if (mousedown == true) {
+                if (coverTiles[i].src.includes('tile')) {
                     coverTiles[i].src = '../images/cover_block.png';
                 }
             });
@@ -234,7 +244,6 @@ function setMines(numMines, firstClickCoverTile) {
     const blankTileId = coverTileId.substring(6);
     const blankTile = document.querySelector('#' + blankTileId);
     allBlankTiles.splice(allBlankTiles.indexOf(blankTile), 1);
-    console.log(allBlankTiles);
 
     let maxRandInt = allBlankTiles.length - 1;
     for (let i = 0; i < numMines; i++) {
@@ -257,7 +266,7 @@ function setMines(numMines, firstClickCoverTile) {
 function setMineProperties() {
     const mines = document.querySelectorAll('[id^="mine"]');
     for (let i = 0; i < mines.length; i++) {
-        
+
         // Get all the cover tiles above mines, substring(5) is used to remove 'mine-'
         const mineCoverTileId = 'cover-' + mines[i].id.substring(5);
         const coverTile = document.querySelector('#' + mineCoverTileId);
@@ -336,26 +345,118 @@ function createCoverTile(blankAndCoverTilePair, r, c) {
     blankAndCoverTilePair.appendChild(coverTile);
 }
 
-const smileyBtn = document.querySelector('#smiley-img');
-smileyBtn.addEventListener('mousedown', () => {
-    smileyBtn.style.borderColor = "gray";
-    smileyBtn.style.borderWidth = "wide";
-    generateCoverTiles(difficulty);
-    numClicks = 0;
+// Set number tiles
+function setNumberTiles() {
+    const mines = document.querySelectorAll('[id^="mine"]');
 
-    // sets timer to 000
-    stopTimer();
-    const leftTime = document.querySelector("#red-num-timer-left");
-    const midTime = document.querySelector("#red-num-timer-mid");
-    const rightTime = document.querySelector("#red-num-timer-right");
-    leftTime.src = '../images/red_0.png';
-    midTime.src = '../images/red_0.png';
-    rightTime.src = '../images/red_0.png';
-})
-smileyBtn.addEventListener('mouseup', () => {
-    smileyBtn.style.borderColor = "";
-    smileyBtn.style.borderWidth = "";
-})
+    // t: top,  m: middle,  b: bottom,  l: left,   r: right
+    const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
+    for (let i = 0; i < mines.length; i++) {
+        for (let j = 0; j < pos.length; j++) {
+            const numberTile = getAdjacentTileID(mines[i], pos[j]);
+            if (numberTile === null || numberTile.src.includes('mine')) {
+                continue;
+            }
+            else {
+                increaseNumberVal(numberTile);
+            }
+        }
+    }
+}
+
+// Returns the tile indicated by pos
+// Example board with labeled rows and cols:
+//     0 * * *
+//     1 * * *
+//     2 * * *
+//       0 1 2
+function getAdjacentTileID(mine, pos) {
+    // Parses the mine id to get the row and column number
+    const mineRowNum = Number(mine.id.substring(mine.id.indexOf('row-') + 4, mine.id.indexOf('-col-')));
+    const mineColNum = Number(mine.id.substring(mine.id.indexOf('col-') + 4));
+    let tileRowNum;
+    let tileColNum;
+
+    switch (pos) {
+        case 'tl':
+            tileRowNum = mineRowNum - 1;
+            tileColNum = mineColNum - 1;
+            break;
+        case 'tm':
+            tileRowNum = mineRowNum - 1;
+            tileColNum = mineColNum;
+            break;
+        case 'tr':
+            tileRowNum = mineRowNum - 1;
+            tileColNum = mineColNum + 1;
+            break;
+        case 'ml':
+            tileRowNum = mineRowNum;
+            tileColNum = mineColNum - 1;
+            break;
+        case 'mr':
+            tileRowNum = mineRowNum;
+            tileColNum = mineColNum + 1;
+            break;
+        case 'bl':
+            tileRowNum = mineRowNum + 1;
+            tileColNum = mineColNum - 1;
+            break;
+        case 'bm':
+            tileRowNum = mineRowNum + 1;
+            tileColNum = mineColNum;
+            break;
+        case 'br':
+            tileRowNum = mineRowNum + 1;
+            tileColNum = mineColNum + 1;
+            break;
+        default:
+            console.log('error in switch statement');
+    }
+    return document.querySelector('#tile-row-' + tileRowNum + '-col-' + tileColNum);
+}
+
+// Increases tile number value
+function increaseNumberVal(numberTile) {
+    // Parses the image source to get the number (numberTile.src will be something like '../images/tile_x.png', where x is the number)
+    const curValue = Number(numberTile.src.substring(numberTile.src.indexOf('tile_') + 5, numberTile.src.indexOf('.png')));
+    const newValue = curValue + 1;
+    numberTile.src = '../images/tile_' + newValue + '.png';
+}
+
+// Attaches event listeners to the smiley button
+function setSmileyProperties() {
+    const smileyBtn = document.querySelector('#smiley-img');
+    // Changes the smiley border styling with hovered over and pressed
+    smileyBtn.addEventListener('mouseover', () => {
+        if (mousedown == true) {
+            smileyBtn.classList.add('smiley-img-pressed');
+            smileyBtn.classList.remove('smiley-img-idle');
+        }
+    });
+    smileyBtn.addEventListener('mouseleave', () => {
+        if (mousedown == true) {
+            smileyBtn.classList.remove('smiley-img-pressed');
+            smileyBtn.classList.add('smiley-img-idle');
+        }
+    });
+    smileyBtn.addEventListener('mousedown', () => {
+        smileyBtn.classList.add('smiley-img-pressed');
+        smileyBtn.classList.remove('smiley-img-idle');
+        console.log('mouseover', smileyBtn);
+    })
+
+    // Resets the cover tiles, numClicks, and the timer
+    smileyBtn.addEventListener('mouseup', () => {
+        smileyBtn.classList.remove('smiley-img-pressed');
+        smileyBtn.classList.add('smiley-img-idle');
+        generateCoverTiles(difficulty);
+        numClicks = 0;
+
+        stopTimer();
+        resetTimer();
+    });
+}
 
 // Code for the timer
 
@@ -380,6 +481,16 @@ function startTimer() {
 function stopTimer() {
     clearInterval(interval);
     return Date.now() - startTime;
+}
+
+// Resets the timer's display to 000
+function resetTimer() {
+    const leftTime = document.querySelector("#red-num-timer-left");
+    const midTime = document.querySelector("#red-num-timer-mid");
+    const rightTime = document.querySelector("#red-num-timer-right");
+    leftTime.src = '../images/red_0.png';
+    midTime.src = '../images/red_0.png';
+    rightTime.src = '../images/red_0.png';
 }
 
 // Updates the timer display

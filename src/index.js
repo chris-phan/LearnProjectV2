@@ -36,7 +36,7 @@ const auth = getAuth();
 var difficulty = 'beginner';
 var numClicks = 0;
 var mousedown;
-var lost = false; // hanson
+var stopPlaying = false;
 
 // Document event listeners
 // Used to switch cover tiles to blank tiles temporarily when left click is held down
@@ -54,7 +54,7 @@ document.addEventListener('mouseup', () => {
 // Onload:
 generateCoverTiles('beginner');
 setSmileyProperties();
-displayMineCount(10); // hanson
+displayMineCount(10);
 
 // Toggling minefield alignment
 const leftAlignBtn = document.querySelector('#left-align-btn');
@@ -87,7 +87,7 @@ beginnerDiffBtn.addEventListener('click', () => {
     generateCoverTiles(difficulty);
     numClicks = 0;
     stopTimer();
-    resetTimer(); // hanson
+    resetTimer();
     numMines = getNumMines(difficulty);
     displayMineCount(numMines);
 });
@@ -99,7 +99,7 @@ intermediateDiffBtn.addEventListener('click', () => {
     generateCoverTiles(difficulty);
     numClicks = 0;
     stopTimer();
-    resetTimer(); // hanson
+    resetTimer();
     numMines = getNumMines(difficulty);
     displayMineCount(numMines);
 });
@@ -111,7 +111,7 @@ expertDiffBtn.addEventListener('click', () => {
     generateCoverTiles(difficulty);
     numClicks = 0;
     stopTimer();
-    resetTimer(); // hanson
+    resetTimer();
     numMines = getNumMines(difficulty);
     displayMineCount(numMines);
 });
@@ -163,7 +163,7 @@ function setCoverTileProperties(totMines) {
         coverTiles[i].addEventListener('contextmenu', (e) => {
             e.preventDefault();
 
-            if (!lost) {
+            if (!stopPlaying) {
                 if (coverTiles[i].classList.contains('flag')) {
                     coverTiles[i].src = '../images/cover_block.png';
                     coverTiles[i].classList.remove('flag');
@@ -180,7 +180,7 @@ function setCoverTileProperties(totMines) {
 
         // Whenever a cover tile that is not over a mine is clicked, hide it
         coverTiles[i].addEventListener('mouseup', (e) => {
-            if (!lost && !coverTiles[i].classList.contains('flag') && e.button == 0) {
+            if (!stopPlaying && !coverTiles[i].classList.contains('flag') && e.button == 0) {
                 numClicks++;
 
                 // On first click
@@ -197,7 +197,7 @@ function setCoverTileProperties(totMines) {
                 if (coverTiles[i].classList.contains('mine')) {
                     stopTimer();
                     // substring(6) to get rid of 'cover-' to get 'row-#-col-#'
-                    lost = true; // hanson
+                    stopPlaying = true;
                     const mineId = 'mine-' + coverTiles[i].id.substring(6);
                     const mine = document.querySelector('#' + mineId);
                     mine.src = '../images/mine_clicked.png';
@@ -214,17 +214,17 @@ function setCoverTileProperties(totMines) {
         // When the mouse is held down and over a cover tile, switch it to a blank tile
         // When the mouse is held down and leaves a cover tile, switch it back to a cover tile
         coverTiles[i].addEventListener('mousedown', (e) => {
-            if (!lost && e.button == 0 && !coverTiles[i].classList.contains('flag')) {
+            if (!stopPlaying && e.button == 0 && !coverTiles[i].classList.contains('flag')) {
                 coverTiles[i].src = '../images/tile_0.png';
             }
         });
         coverTiles[i].addEventListener('mouseover', () => {
-            if (!lost && mousedown == true && !coverTiles[i].classList.contains('flag')) {
+            if (!stopPlaying && mousedown == true && !coverTiles[i].classList.contains('flag')) {
                 coverTiles[i].src = '../images/tile_0.png';
             }
         });
         coverTiles[i].addEventListener('mouseleave', () => {
-            if (!lost && coverTiles[i].src.includes('tile') && !coverTiles[i].classList.contains('flag')) {
+            if (!stopPlaying && coverTiles[i].src.includes('tile') && !coverTiles[i].classList.contains('flag')) {
                 coverTiles[i].src = '../images/cover_block.png';
             }
         });
@@ -249,10 +249,8 @@ function reveal(coverTile) {
     }
 }
 
-// hanson
 // Reveals all empty pockets that connect to a click
 function chainReveal(tile) {
-
     // base case, all adjacent are revealed numbers or reached edge
     const coverTile = document.querySelector('#cover-' + tile.id);
     coverTile.classList.add('revealed');
@@ -262,29 +260,27 @@ function chainReveal(tile) {
     const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
 
     for (let i = 0; i < pos.length; i++) {
-
+        // The adjacent number tile must exist and the cover tile must not already be revealed
         const checkTile = getAdjacentTile(tile, pos[i], 'tile');
         if (checkTile === null) {
-
             continue;
         }
-        // console.log(checkTile.id);
+
         const checkCoverTile = document.querySelector('#cover-' + checkTile.id);
         if (checkCoverTile.classList.contains('revealed')) {
-
             continue;
         }
 
+        // If the adjacent number tile is blank, recurse
+        // Else, reveal it
         if (checkTile.src.includes('tile_0.png')) {
             chainReveal(checkTile);
-        } else {
+        }
+        else {
             checkCoverTile.classList.add('revealed');
             checkCoverTile.style.zIndex = -1;
         }
     }
-
-    return;
-
 }
 
 // Changes the displayed flag counter
@@ -396,6 +392,18 @@ function showAllMines() {
         if (!coverTileOverMine.classList.contains('flag')) {
             coverTileOverMine.style.zIndex = -1;
         }
+    }
+}
+
+// Flag all the cover tiles above a mine if the player wins
+function flagRemainingMines() {
+    const allMines = document.querySelectorAll('[id^="mine"]');
+    for (let i = 0; i < allMines.length; i++) {
+        // Parses the mine id and gets rid of 'mine-' to get row-#-col-#
+        const coverTileOverMineId = 'cover-' + allMines[i].id.substring(5);
+        const coverTileOverMine = document.querySelector('#' + coverTileOverMineId);
+
+        coverTileOverMine.src = '../images/cover_block_flag.png';
     }
 }
 
@@ -555,7 +563,7 @@ function setNumberTileProperties() {
 
         // Change unflagged cover tiles to tile when the left click is held over a number tile
         numberTiles[i].addEventListener('mousedown', (e) => {
-            if (!lost && e.button == 0) {
+            if (!stopPlaying && e.button == 0) {
                 const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
                 for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
                     adjUnflaggedCoverTiles[i].src = '../images/tile_0.png';
@@ -564,7 +572,7 @@ function setNumberTileProperties() {
         });
 
         numberTiles[i].addEventListener('mouseover', (e) => {
-            if (!lost && mousedown == true) {
+            if (!stopPlaying && mousedown == true) {
                 const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
                 for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
                     adjUnflaggedCoverTiles[i].src = '../images/tile_0.png';
@@ -574,7 +582,7 @@ function setNumberTileProperties() {
 
         // Revert back to cover tile
         numberTiles[i].addEventListener('mouseleave', () => {
-            if (!lost) {
+            if (!stopPlaying) {
                 const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
                 for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
                     adjUnflaggedCoverTiles[i].src = '../images/cover_block.png';
@@ -584,7 +592,7 @@ function setNumberTileProperties() {
 
         // Chording and reverting the cover tiles that got changed into blanks back into cover tiles
         numberTiles[i].addEventListener('mouseup', (e) => {
-            if (!lost) {
+            if (!stopPlaying) {
                 chord(e, numberTiles[i]);
                 const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
                 for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
@@ -669,7 +677,7 @@ function setSmileyProperties() {
         smileyBtn.classList.add('smiley-img-idle');
         generateCoverTiles(difficulty);
         numClicks = 0;
-        lost = false; // hanson
+        stopPlaying = false;
         numMines = getNumMines(difficulty);
         if (difficulty === 'beginner') {
             displayMineCount(10);
@@ -686,12 +694,11 @@ function setSmileyProperties() {
     });
 }
 
-// Hanson
 // Code to check win condition
 // getElementByClassName returns array of everything in that class
 function checkWin() {
 
-    if (!lost) {
+    if (!stopPlaying) {
         var tilesRevealed = document.getElementsByClassName('revealed').length;
         console.log(tilesRevealed);
         if (difficulty === 'beginner' && (tilesRevealed) == 71) { // 81 - 10
@@ -705,13 +712,13 @@ function checkWin() {
 
 }
 
-// hanson
 // Events after win condition is met
 function win() {
     stopTimer(); // this returns time (use it with firebase)
     const smileyBtn = document.querySelector('#smiley-img');
     smileyBtn.src = '../images/win.png';
-    lost = false;
+    stopPlaying = true;
+    flagRemainingMines();
 }
 
 // Code for the timer

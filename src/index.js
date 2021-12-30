@@ -56,6 +56,30 @@ generateCoverTiles('beginner');
 setSmileyProperties();
 displayMineCount(10); // hanson
 
+// Toggling minefield alignment
+const leftAlignBtn = document.querySelector('#left-align-btn');
+const centerAlignBtn = document.querySelector('#center-align-btn');
+const rightAlignBtn = document.querySelector('#right-align-btn');
+const outerBorder = document.querySelector('#outer-border-id');
+
+leftAlignBtn.addEventListener('click', () => {
+    outerBorder.classList.remove('right');
+    outerBorder.classList.remove('center-border');
+    outerBorder.classList.add('left');
+});
+
+centerAlignBtn.addEventListener('click', () => {
+    outerBorder.classList.remove('right');
+    outerBorder.classList.remove('left');
+    outerBorder.classList.add('center-border');
+});
+
+rightAlignBtn.addEventListener('click', () => {
+    outerBorder.classList.remove('center-border');
+    outerBorder.classList.remove('left');
+    outerBorder.classList.add('right');
+});
+
 // Beginner button
 const beginnerDiffBtn = document.querySelector('#diff-beg');
 beginnerDiffBtn.addEventListener('click', () => {
@@ -65,6 +89,7 @@ beginnerDiffBtn.addEventListener('click', () => {
     resetTimer(); // hanson
     stopTimer();
     displayMineCount(10);
+    numMines = getNumMines(difficulty);
 });
 
 // Intermediate button
@@ -76,6 +101,7 @@ intermediateDiffBtn.addEventListener('click', () => {
     resetTimer(); // hanson
     stopTimer();
     displayMineCount(40);
+    numMines = getNumMines(difficulty);
 });
 
 // Expert button
@@ -87,6 +113,7 @@ expertDiffBtn.addEventListener('click', () => {
     resetTimer(); // hanson
     stopTimer();
     displayMineCount(99);
+    numMines = getNumMines(difficulty);
 });
 
 // Creates the cover tiles
@@ -172,6 +199,8 @@ function setCoverTileProperties(totMines) {
                     const mineId = 'mine-' + coverTiles[i].id.substring(6);
                     const mine = document.querySelector('#' + mineId);
                     mine.src = '../images/mine_clicked.png';
+                    const smileyBtn = document.querySelector('#smiley-img');
+                    smileyBtn.src = '../images/lose.png';
                     showAllMines();
                 }
 
@@ -631,6 +660,7 @@ function setSmileyProperties() {
         generateCoverTiles(difficulty);
         numClicks = 0;
         lost = false; // hanson
+        numMines = getNumMines(difficulty);
         if (difficulty === 'beginner') {
             displayMineCount(10);
         }
@@ -640,7 +670,7 @@ function setSmileyProperties() {
         else if (difficulty === 'expert') {
             displayMineCount(99);
         }
-
+        smileyBtn.src = '../images/smiley.png'; // changes to normal smile after reset
         stopTimer();
         resetTimer();
     });
@@ -750,6 +780,7 @@ showMinesBtn.addEventListener('click', () => {
 
 // TODO: input validation: numbers greater than 999
 let numMines = 0;
+numMines = getNumMines(difficulty);
 const mineFormRef = document.querySelector('#user-mines-form');
 mineFormRef.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -760,7 +791,18 @@ mineFormRef.addEventListener('submit', (e) => {
     displayMineCount(numMines);
 });
 
-
+// If form is not used
+function getNumMines(difficulty) {
+    if (difficulty === 'beginner') {
+        return 10;
+    }
+    else if (difficulty === 'intermediate') {
+        return 40;
+    }
+    else if (difficulty === 'expert') {
+        return 99;
+    }
+}
 
 // Login, Logout, firebase stuff
 

@@ -16,7 +16,7 @@
         <div class="col-2 navbar-brand">Minesweeper</div>
         <div class="col-6"> </div>
         <div class="col-2 d-flex flex-row">
-            <p id="welcome-user"></p>
+            <p style="margin-top: 1rem;" id="welcome-user"></p>
             <div id="navbar-items">
                 <a id="sign-up-button" type="button" style="text-decoration: none; color: white;" class="p-2">Sign-Up</a>
                 <a style="text-decoration: none; color: white;" href="#loginForm" class="p-2">Login</a>
@@ -58,8 +58,15 @@
         </div>
     </div>
 
-    <h1 style="margin-top: 3rem;" class="text-center">Minesweeper</h1>
+    <h1 style="margin-top: 5rem;" class="text-center display-1">Minesweeper</h1>
     <br>
+
+    <div class="alignments">
+        <button id='left-align-btn' class='secondary'>Left</button>
+        <button id='center-align-btn' class='secondary'>Center</button>
+        <button id='right-align-btn' class='secondary'>Right</button>
+    </div>
+
     <div style="padding-bottom: 3rem;">
         <h2>Difficulty</h2>
         <button id="diff-beg">Beginner</button>
@@ -68,7 +75,7 @@
         <button id="diff-cus">Custom</button>
     </div>
 
-    <div class="outer-border" draggable="false">
+    <div id="outer-border-id" class="outer-border" draggable="false">
         <div id="border2" draggable="false">
             <div id="border3" draggable="false">
                 <div class="num-mines" draggable="false">

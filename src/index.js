@@ -180,7 +180,7 @@ function setCoverTileProperties(totMines) {
         coverTiles[i].addEventListener('mouseup', (e) => {
             if (!coverTiles[i].classList.contains('flag') && e.button == 0) {
                 numClicks++;
-                
+
                 // On first click
                 if (numClicks == 1) {
                     startTimer();
@@ -204,44 +204,47 @@ function setCoverTileProperties(totMines) {
                     showAllMines();
                 }
 
-                // hanson
-                // .substring(6) removes cover-
-                const tile = document.querySelector('#' + coverTiles[i].id.substring(6)); 
-                if (tile.src.includes('tile_0.png')) {
-                    chainReveal(tile);
-                    checkWin();
-                } else {
-                    coverTiles[i].classList.add('revealed');
-                    coverTiles[i].style.zIndex = -1;
-                    checkWin();
-                }
-
-                console.log(coverTiles[i].src);
+                reveal(coverTiles[i]);
             }
         });
 
         // When the mouse is held down and over a cover tile, switch it to a blank tile
         // When the mouse is held down and leaves a cover tile, switch it back to a cover tile
-            coverTiles[i].addEventListener('mousedown', (e) => {
-                if (e.button == 0 && !coverTiles[i].classList.contains('flag')) {
-                    coverTiles[i].src = '../images/tile_0.png';
-                }
-            });
-            coverTiles[i].addEventListener('mouseover', () => {
-                if (mousedown == true && !coverTiles[i].classList.contains('flag')) {
-                    coverTiles[i].src = '../images/tile_0.png';
-                }
-            });
-            coverTiles[i].addEventListener('mouseleave', () => {
-                if (coverTiles[i].src.includes('tile') && !coverTiles[i].classList.contains('flag')) {
-                    coverTiles[i].src = '../images/cover_block.png';
-                }
-            });
+        coverTiles[i].addEventListener('mousedown', (e) => {
+            if (e.button == 0 && !coverTiles[i].classList.contains('flag')) {
+                coverTiles[i].src = '../images/tile_0.png';
+            }
+        });
+        coverTiles[i].addEventListener('mouseover', () => {
+            if (mousedown == true && !coverTiles[i].classList.contains('flag')) {
+                coverTiles[i].src = '../images/tile_0.png';
+            }
+        });
+        coverTiles[i].addEventListener('mouseleave', () => {
+            if (coverTiles[i].src.includes('tile') && !coverTiles[i].classList.contains('flag')) {
+                coverTiles[i].src = '../images/cover_block.png';
+            }
+        });
+    }
+}
+
+function reveal(coverTile) {
+    // Parses coverTile's id to get 'tile-row-#-col-#'
+    const numberTile = document.querySelector('#' + coverTile.id.substring(6));
+
+    // If the tile underneath the cover tile is 0, chain reveal
+    // Else, just reveal it
+    if (numberTile !== null && numberTile.src.includes('tile_0')) {
+        console.log('chain', numberTile.src);
+        chainReveal(numberTile);
+    }
+    else {
+        coverTile.style.zIndex = -1;
     }
 }
 
 // hanson
-// Reveals all empty pockets that connect to first click
+// Reveals all empty pockets that connect to a click
 function chainReveal(tile) {
 
     // base case, all adjacent are revealed numbers or reached edge
@@ -254,18 +257,18 @@ function chainReveal(tile) {
 
     for (let i = 0; i < pos.length; i++) {
 
-        const checkTile = getAdjacentTile(tile, pos[i]);
+        const checkTile = getAdjacentTile(tile, pos[i], 'tile');
         if (checkTile === null) {
 
             continue;
         }
-        console.log(checkTile.id);
+        // console.log(checkTile.id);
         const checkCoverTile = document.querySelector('#cover-' + checkTile.id);
         if (checkCoverTile.classList.contains('revealed')) {
 
             continue;
         }
-        
+
         if (checkTile.src.includes('tile_0.png')) {
             chainReveal(checkTile);
         } else {
@@ -276,54 +279,6 @@ function chainReveal(tile) {
 
     return;
 
-}
-
-// hanson
-function getAdjacentTile(tile, pos) {
-    const tileRowNum = Number(tile.id.substring(tile.id.indexOf('row-') + 4, tile.id.indexOf('-col-')));
-    const tileColNum = Number(tile.id.substring(tile.id.indexOf('col-') + 4));
-
-    let nextTileRowNum;
-    let nextTileColNum;
-
-    switch (pos) {
-        case 'tl':
-            nextTileRowNum = tileRowNum - 1;
-            nextTileColNum = tileColNum - 1;
-            break;
-        case 'tm':
-            nextTileRowNum = tileRowNum - 1;
-            nextTileColNum = tileColNum;
-            break;
-        case 'tr':
-            nextTileRowNum = tileRowNum - 1;
-            nextTileColNum = tileColNum + 1;
-            break;
-        case 'ml':
-            nextTileRowNum = tileRowNum;
-            nextTileColNum = tileColNum - 1;
-            break;
-        case 'mr':
-            nextTileRowNum = tileRowNum;
-            nextTileColNum = tileColNum + 1;
-            break;
-        case 'bl':
-            nextTileRowNum = tileRowNum + 1;
-            nextTileColNum = tileColNum - 1;
-            break;
-        case 'bm':
-            nextTileRowNum = tileRowNum + 1;
-            nextTileColNum = tileColNum;
-            break;
-        case 'br':
-            nextTileRowNum = tileRowNum + 1;
-            nextTileColNum = tileColNum + 1;
-            break;
-        default:
-            console.log('error in switch statement');
-    }
-
-    return document.querySelector('#tile-row-' + nextTileRowNum + '-col-' + nextTileColNum);
 }
 
 // Changes the displayed flag counter
@@ -393,7 +348,6 @@ function setMines(numMines, firstClickCoverTile) {
         // Generate a random index of the allBlankTiles array to be a mine
         const randomInt = Math.floor(Math.random() * maxRandInt);
         const mine = allBlankTiles[randomInt];
-        console.log(randomInt); // hanson
 
         // Take out the blank tile from the array and decrease the max value that can be randomly generated
         allBlankTiles.splice(randomInt, 1);
@@ -419,7 +373,7 @@ function setMineProperties() {
 
         // Prevent right clicking on mines
         mines[i].addEventListener('contextmenu', (e) => {
-            e.preventDefault(); s
+            e.preventDefault();
         });
     }
 }
@@ -428,7 +382,14 @@ function setMineProperties() {
 function showAllMines() {
     const allMines = document.querySelectorAll('[id^="mine"]');
     for (let i = 0; i < allMines.length; i++) {
-        allMines[i].style.zIndex = 5;
+        // Parses the mine id and gets rid of 'mine-' to get row-#-col-#
+        const coverTileOverMineId = 'cover-' + allMines[i].id.substring(5);
+        const coverTileOverMine = document.querySelector('#' + coverTileOverMineId);
+
+        // Hides the cover tile if it is not flagged
+        if (!coverTileOverMine.classList.contains('flag')) {
+            coverTileOverMine.style.zIndex = -1;
+        }
     }
 }
 
@@ -492,13 +453,12 @@ function createCoverTile(blankAndCoverTilePair, r, c) {
 // Set number tiles
 function setNumberTiles() {
     const mines = document.querySelectorAll('[id^="mine"]');
-
     // t: top,  m: middle,  b: bottom,  l: left,   r: right
     const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
     for (let i = 0; i < mines.length; i++) {
         for (let j = 0; j < pos.length; j++) {
-            const numberTile = getAdjacentMineTileID(mines[i], pos[j]);
-            if (numberTile === null || numberTile.src.includes('mine')) {
+            const numberTile = getAdjacentTile(mines[i], pos[j], 'tile');
+            if (numberTile === null) {
                 continue;
             }
             else {
@@ -509,55 +469,65 @@ function setNumberTiles() {
 }
 
 // Returns the tile indicated by pos
+// tileType = 'mine', 'tile', 'cover-tile'
 // Example board with labeled rows and cols:
 //     0 * * *
 //     1 * * *
 //     2 * * *
 //       0 1 2
-function getAdjacentMineTileID(mine, pos) {
-    // Parses the mine id to get the row and column number
-    const mineRowNum = Number(mine.id.substring(mine.id.indexOf('row-') + 4, mine.id.indexOf('-col-')));
-    const mineColNum = Number(mine.id.substring(mine.id.indexOf('col-') + 4));
-    let tileRowNum;
-    let tileColNum;
-
+function getAdjacentTile(rootTile, pos, tileType) {
+    // Parses the rootTile id to get the row and column number
+    const rowNum = Number(rootTile.id.substring(rootTile.id.indexOf('row-') + 4, rootTile.id.indexOf('-col-')));
+    const colNum = Number(rootTile.id.substring(rootTile.id.indexOf('col-') + 4));
+    let targetRowNum;
+    let targetColNum;
     switch (pos) {
         case 'tl':
-            tileRowNum = mineRowNum - 1;
-            tileColNum = mineColNum - 1;
+            targetRowNum = rowNum - 1;
+            targetColNum = colNum - 1;
             break;
         case 'tm':
-            tileRowNum = mineRowNum - 1;
-            tileColNum = mineColNum;
+            targetRowNum = rowNum - 1;
+            targetColNum = colNum;
             break;
         case 'tr':
-            tileRowNum = mineRowNum - 1;
-            tileColNum = mineColNum + 1;
+            targetRowNum = rowNum - 1;
+            targetColNum = colNum + 1;
             break;
         case 'ml':
-            tileRowNum = mineRowNum;
-            tileColNum = mineColNum - 1;
+            targetRowNum = rowNum;
+            targetColNum = colNum - 1;
             break;
         case 'mr':
-            tileRowNum = mineRowNum;
-            tileColNum = mineColNum + 1;
+            targetRowNum = rowNum;
+            targetColNum = colNum + 1;
             break;
         case 'bl':
-            tileRowNum = mineRowNum + 1;
-            tileColNum = mineColNum - 1;
+            targetRowNum = rowNum + 1;
+            targetColNum = colNum - 1;
             break;
         case 'bm':
-            tileRowNum = mineRowNum + 1;
-            tileColNum = mineColNum;
+            targetRowNum = rowNum + 1;
+            targetColNum = colNum;
             break;
         case 'br':
-            tileRowNum = mineRowNum + 1;
-            tileColNum = mineColNum + 1;
+            targetRowNum = rowNum + 1;
+            targetColNum = colNum + 1;
             break;
         default:
             console.log('error in switch statement');
     }
-    return document.querySelector('#tile-row-' + tileRowNum + '-col-' + tileColNum);
+    let resultId;
+    if (tileType == 'mine') {
+        resultId = '#mine-tile-row-' + targetRowNum + '-col-' + targetColNum;
+    }
+    else if (tileType == 'cover-tile') {
+        resultId = '#cover-tile-row-' + targetRowNum + '-col-' + targetColNum;
+    }
+    else if (tileType == 'tile') {
+        resultId = '#tile-row-' + targetRowNum + '-col-' + targetColNum;
+    }
+    return document.querySelector(resultId);
 }
 
 // Increases tile number value
@@ -572,9 +542,92 @@ function increaseNumberVal(numberTile) {
 function setNumberTileProperties() {
     const numberTiles = document.querySelectorAll('[id^="tile"]');
     for (let i = 0; i < numberTiles.length; i++) {
+        // Prevent right clicking on number tiles
         numberTiles[i].addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
+
+        // Change unflagged cover tiles to tile when the left click is held over a number tile
+        numberTiles[i].addEventListener('mousedown', (e) => {
+            if (e.button == 0) {
+                const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
+                for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
+                    adjUnflaggedCoverTiles[i].src = '../images/tile_0.png';
+                }
+            }
+        });
+        
+        numberTiles[i].addEventListener('mouseover', (e) => {
+            if (mousedown == true) {
+                const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
+                for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
+                    adjUnflaggedCoverTiles[i].src = '../images/tile_0.png';
+                }
+            }
+        });
+        
+        // Revert back to cover tile
+        numberTiles[i].addEventListener('mouseleave', () => {
+            const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
+            for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
+                adjUnflaggedCoverTiles[i].src = '../images/cover_block.png';
+            }
+        });
+
+        // Chording and reverting the cover tiles that got changed into blanks back into cover tiles
+        numberTiles[i].addEventListener('mouseup', (e) => {
+            chord(e, numberTiles[i]);
+            const adjUnflaggedCoverTiles = getUnflaggedCoverTiles(numberTiles[i]);
+            for (let i = 0; i < adjUnflaggedCoverTiles.length; i++) {
+                adjUnflaggedCoverTiles[i].src = '../images/cover_block.png';
+            }
+        });
+    }
+}
+
+// Get all unflagged adjacent cover tiles
+function getUnflaggedCoverTiles(numberTile) {
+    const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
+    const adjCoverTiles = [];
+    for (let i = 0; i < pos.length; i++) {
+        const coverTile = getAdjacentTile(numberTile, pos[i], 'cover-tile');
+        if (coverTile !== null && !coverTile.classList.contains('flag')) {
+            adjCoverTiles.push(coverTile);
+        }
+    }
+    return adjCoverTiles;
+}
+
+// Reveal all adjacent tiles when left clicking on a number tile
+// Only execute if the number of flags is equal to the number value of the clicked number tile
+function chord(e, numberTile) {
+    if (e.button == 0) {
+        // Get all adjacent cover tiles and add them to an array
+        // Also count the number of flags around the number tile
+        const pos = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
+        const adjCoverTiles = [];
+        let adjFlags = 0;
+        for (let i = 0; i < pos.length; i++) {
+            const coverTile = getAdjacentTile(numberTile, pos[i], 'cover-tile');
+            if (coverTile !== null) {
+                if (coverTile.classList.contains('flag')) {
+                    adjFlags++;
+                }
+                adjCoverTiles.push(coverTile);
+            }
+        }
+
+        // Reveal adjacent tiles around a number tile if the number tile is surrounded by an equal number of flags
+        // Parses the numberTile image src to get the number value
+        const numberTileVal = Number(numberTile.src.substring(numberTile.src.indexOf('tile_') + 5, numberTile.src.indexOf('.png')));
+        if (numberTileVal == adjFlags) {
+            for (let i = 0; i < adjCoverTiles.length; i++) {
+                // Only reveal the cover tiles that are not flags
+                if (!adjCoverTiles[i].classList.contains('flag')) {
+                    reveal(adjCoverTiles[i]);
+                }
+            }
+        }
     }
 }
 
@@ -630,9 +683,9 @@ function checkWin() {
 
     if (!lost) {
         var tilesRevealed = document.getElementsByClassName('revealed').length;
-        
+
         if (difficulty === 'beginner' && (tilesRevealed) == 71) { // 81 - 10
-            win(); 
+            win();
         } else if (difficulty === 'intermediate' && (tilesRevealed) == 216) { // 256 - 40
             win();
         } else if (difficulty === 'expert' && (tilesRevealed) == 381) { // 480 - 99

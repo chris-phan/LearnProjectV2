@@ -37,6 +37,7 @@ var difficulty = 'beginner';
 var numClicks = 0;
 var mousedown;
 var stopPlaying = false;
+let numMines = 0;
 
 // Document event listeners
 // Used to switch cover tiles to blank tiles temporarily when left click is held down
@@ -148,7 +149,6 @@ function cleanBoard() {
     // Looks for all ids starting with (^=) "div-row"
     const rows = document.querySelectorAll('[id^="div-row"]');
     const length = rows.length;
-    console.log('removing ' + rows.length + ' rows');
     for (let i = 0; i < length; i++) {
         rows[i].remove();
     }
@@ -193,19 +193,6 @@ function setCoverTileProperties(totMines) {
                     displayMineCount(totMines);
                 }
 
-                // Reveal all mines if a cover tile above a mine has been clicked
-                if (coverTiles[i].classList.contains('mine')) {
-                    stopTimer();
-                    // substring(6) to get rid of 'cover-' to get 'row-#-col-#'
-                    stopPlaying = true;
-                    const mineId = 'mine-' + coverTiles[i].id.substring(6);
-                    const mine = document.querySelector('#' + mineId);
-                    mine.src = '../images/mine_clicked.png';
-                    const smileyBtn = document.querySelector('#smiley-img');
-                    smileyBtn.src = '../images/lose.png';
-                    showAllMines();
-                }
-
                 // Always reveal a tile if an unflagged cover tile is left clicked
                 reveal(coverTiles[i]);
             }
@@ -235,10 +222,23 @@ function setCoverTileProperties(totMines) {
 function reveal(coverTile) {
     // Parses coverTile's id to get 'tile-row-#-col-#'
     const numberTile = document.querySelector('#' + coverTile.id.substring(6));
-
-    // If the tile underneath the cover tile is 0, chain reveal
+    
+    // If the player clicks on a mine, they lose
+    // Else if the tile underneath the cover tile is 0, chain reveal
     // Else, just reveal it
-    if (numberTile !== null && numberTile.src.includes('tile_0')) {
+    if (coverTile.classList.contains('mine')) {
+        stopTimer();
+        stopPlaying = true;
+
+        // substring(6) to get rid of 'cover-' to get 'row-#-col-#'
+        const mineId = 'mine-' + coverTile.id.substring(6);
+        const mine = document.querySelector('#' + mineId);
+        mine.src = '../images/mine_clicked.png';
+        const smileyBtn = document.querySelector('#smiley-img');
+        smileyBtn.src = '../images/lose.png';
+        showAllMines();
+    }
+    else if (numberTile !== null && numberTile.src.includes('tile_0')) {
         chainReveal(numberTile);
         checkWin();
     }
@@ -668,7 +668,6 @@ function setSmileyProperties() {
     smileyBtn.addEventListener('mousedown', () => {
         smileyBtn.classList.add('smiley-img-pressed');
         smileyBtn.classList.remove('smiley-img-idle');
-        console.log('mouseover', smileyBtn);
     })
 
     // Resets the cover tiles, numClicks, and the timer
@@ -700,7 +699,6 @@ function checkWin() {
 
     if (!stopPlaying) {
         var tilesRevealed = document.getElementsByClassName('revealed').length;
-        console.log(tilesRevealed);
         if (difficulty === 'beginner' && (tilesRevealed) == 71) { // 81 - 10
             win();
         } else if (difficulty === 'intermediate' && (tilesRevealed) == 216) { // 256 - 40
@@ -714,11 +712,47 @@ function checkWin() {
 
 // Events after win condition is met
 function win() {
-    stopTimer(); // this returns time (use it with firebase)
     const smileyBtn = document.querySelector('#smiley-img');
     smileyBtn.src = '../images/win.png';
     stopPlaying = true;
     flagRemainingMines();
+    displayMineCount(0);
+
+    // Firebase: updates the win and time fields according to the difficulty played
+    const time = stopTimer();
+    const user = auth.currentUser;
+    if (user !== null) {
+        const userDocRef = doc(db, 'users', user.uid);
+
+        // Updates the time field if it doesn't exist or is faster than the previous best time
+        // Also increments the wins based on difficulty
+        getDoc(userDocRef).then((doc) => {
+            if (difficulty == 'beginner') {
+                if (doc.data().bestBeginnerTime == undefined || doc.data().bestBeginnerTime > time) {
+                    updateDoc(userDocRef, { bestBeginnerTime: time });
+                }
+
+                updateDoc(userDocRef, { beginnerWins: increment(1) });       
+            }
+            else if (difficulty == 'intermediate') {
+                if (doc.data().bestIntermediateTime == undefined || doc.data().bestIntermediateTime > time) {
+                    updateDoc(userDocRef, { bestIntermediateTime: time });
+                }
+
+                updateDoc(userDocRef, { intermediateWins: increment(1) });
+            }
+            else if (difficulty == 'expert') {
+                if (doc.data().bestExpertTime == undefined || doc.data().bestExpertTime > time) {
+                    updateDoc(userDocRef, { bestExpertTime: time });
+                }
+
+                updateDoc(userDocRef, { expertWins: increment(1) });
+            }
+        });
+
+        // Increment the total number of wins
+        updateDoc(userDocRef, { totWins: increment(1) });
+    }
 }
 
 // Code for the timer
@@ -736,7 +770,6 @@ function startTimer() {
     interval = setInterval(() => {
         time++;
         updateDisplay(time);
-        // console.log('hi');
     }, delay);
 }
 
@@ -774,7 +807,6 @@ function updateDisplay(time) {
     }
 }
 
-
 // Code for testing purposes
 const startTimeBtn = document.querySelector('#start-timer');
 startTimeBtn.addEventListener('click', () => {
@@ -797,7 +829,6 @@ showMinesBtn.addEventListener('click', () => {
 });
 
 // TODO: input validation: numbers greater than 999
-let numMines = 0;
 numMines = getNumMines(difficulty);
 const mineFormRef = document.querySelector('#user-mines-form');
 mineFormRef.addEventListener('submit', (e) => {
@@ -809,7 +840,7 @@ mineFormRef.addEventListener('submit', (e) => {
     displayMineCount(numMines);
 });
 
-// If form is not used
+// Returns the number of mines according to the difficulty
 function getNumMines(difficulty) {
     if (difficulty === 'beginner') {
         return 10;
@@ -822,54 +853,23 @@ function getNumMines(difficulty) {
     }
 }
 
-// Login, Logout, firebase stuff
 
+// Firebase code
+
+// Log in
 const loginForm = document.querySelector('.login');
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
+
     console.log("logged in");
     const email = loginForm.email.value;
     const password = loginForm.password.value;
-    signInWithEmailAndPassword(auth, email, password)
-        .then((cred) => {
-            const logOutSect = document.querySelector('#logout-section')
-            logOutSect.classList.toggle("hide-private");
-            const navbarItems = document.querySelector('#navbar-items');
-            navbarItems.classList.add("hide-private");
-            console.log('user logged in: ', cred.user);
-            loginForm.reset();
-            loginForm.classList.add("hide-private");
-
-            const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
-
-            getDoc(userDocRef)
-                .then((doc) => {
-                    let username = doc.data().username;
-                    const welcome = document.querySelector('#welcome-user');
-                    welcome.style.color = 'white';
-                    console.log('username here');
-                    console.log(username);
-                    welcome.innerHTML = 'Welcome ' + username;
-                })
-
-            setDoc(userDocRef, { lastUpdated: serverTimestamp() }, { merge: true });    // updates doc or creates it if it doesn't exist
-            // getDoc(userDocRef)
-            //     .then((doc) => {
-            //         if (typeof doc.data().count === 'undefined') {
-            //             updateDoc(userDocRef, {email: cred.user.email, score: 0});
-            //             location.reload();
-            //         }
-            //     });
-
-            // onSnapshot(userDocRef, (doc) => {
-            //     document.querySelector('#indivNum').innerHTML = doc.data().count;
-            // });
-        })
-        .catch((error) => {
-            console.error(error.message);
-        });
+    signInWithEmailAndPassword(auth, email, password).catch((error) => {
+        console.error(error.message);
+    });
 });
 
+// Sign up
 const signUpRef = document.querySelector('.add');
 signUpRef.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -877,90 +877,54 @@ signUpRef.addEventListener('submit', (e) => {
     const email = signUpRef.email.value;
     const password = signUpRef.password.value;
     const username = signUpRef.username.value;
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((cred) => {
-            const resultMessage = document.querySelector('#resultMessage');
-            resultMessage.style.color = 'green';
-            resultMessage.innerHTML = 'Success!';
-            setTimeout(function () {
-                const signUpDropDown = document.querySelector('#sign-up-dropdown');
-                signUpDropDown.classList.toggle("collapsing");
-                resultMessage.innerHTML = '';
-            }, 2000);
+    createUserWithEmailAndPassword(auth, email, password).then((cred) => {
+        // Displaying success message, disappears after 2 seconds
+        const resultMessage = document.querySelector('#resultMessage');
+        resultMessage.style.color = 'green';
+        resultMessage.innerHTML = 'Success!';
+        setTimeout(function () {
+            const signUpDropDown = document.querySelector('#sign-up-dropdown');
+            signUpDropDown.classList.toggle("collapsing");
+            resultMessage.innerHTML = '';
+        }, 2000);
 
-            signInWithEmailAndPassword(auth, email, password)
-                .then((cred) => {
-                    const logOutSect = document.querySelector('#logout-section')
-                    logOutSect.classList.toggle("hide-private");
-                    const navbarItems = document.querySelector('#navbar-items');
-                    navbarItems.classList.add("hide-private");
-                    console.log('user logged in: ', cred.user);
-                    loginForm.classList.add("hide-private");
-                    signUpRef.reset();
-                    const userDocRef = doc(db, 'scores', cred.user.uid);    // get a reference of the user's doc
+        // Log the users in after they sign up
+        signInWithEmailAndPassword(auth, email, password).catch((error) => {
+            console.error(error.message);
+        });
 
-                    getDoc(userDocRef)
-                        .then((doc) => {
-                            let username = doc.data().username;
-                            const welcome = document.querySelector('#welcome-user');
-                            welcome.style.color = 'white';
-                            console.log('username here');
-                            console.log(username);
-                            welcome.innerHTML = 'Welcome ' + username;
-                        })
+        // Creates a doc for the user with the following fields:
+        // lastSignedIn, email, username, beginnerWins, intermediateWins, expertWins, totWins
+        const userDocRef = doc(db, 'users', cred.user.uid);
+        setDoc(userDocRef, {
+            lastSignedIn: serverTimestamp(),
+            email: cred.user.email,
+            username: username,
+            beginnerWins: 0,
+            intermediateWins: 0,
+            expertWins: 0,
+            totWins: 0
+        });
 
-                    setDoc(userDocRef, { lastUpdated: serverTimestamp() }, { merge: true });    // updates doc or creates it if it doesn't exist
-                    getDoc(userDocRef)
-                        .then((doc) => {
-                            if (typeof doc.data().score === 'undefined') {
-                                updateDoc(userDocRef, { count: 0, email: cred.user.email });
-                                location.reload();
-                            }
-                        });
+        signUpRef.reset();
 
-                    // onSnapshot(userDocRef, (doc) => {
-                    //     document.querySelector('#indivNum').innerHTML = doc.data().count;
-                    // });
-                })
-                .catch((error) => {
-                    console.error(error.message);
-                });
-
-
-            // Creates an indivCount document for the user
-            const userDocRef = doc(db, 'scores', cred.user.uid);
-            setDoc(userDocRef, { email: cred.user.email, score: 0, username: username });
-            signUpRef.reset();
-        })
+    }).catch((error) => {
         // this catches if email is repeated, 
         // TODO: make it so that same username is also an error
-        .catch((error) => {
-            const resultMessage = document.querySelector('#resultMessage');
-            resultMessage.style.color = 'red';
-            resultMessage.innerHTML = error.message;
-            signUpRef.reset();
-        })
+        const resultMessage = document.querySelector('#resultMessage');
+        resultMessage.style.color = 'red';
+        resultMessage.innerHTML = error.message;
+        signUpRef.reset();
+    })
 })
 
+// Log out
 const logOutBtn = document.querySelector('#logout');
 logOutBtn.addEventListener('click', (e) => {
-    console.log('here');
     if (auth.currentUser !== null) {
-        signOut(auth)
-            .then(() => {
-                loginForm.classList.remove("hide-private");
-                const logOutSect = document.querySelector('#logout-section')
-                logOutSect.classList.toggle("hide-private");
-                const navbarItems = document.querySelector('#navbar-items');
-                navbarItems.classList.remove("hide-private");
-                const welcome = document.querySelector('#welcome-user');
-                welcome.style.color = 'white';
-                welcome.innerHTML = '';
-                console.log('Log out successful');
-            })
-            .catch((err) => {
-                console.error(err.message);
-            });
+        signOut(auth).catch((err) => {
+            console.error(err.message);
+        });
     }
 });
 
@@ -976,4 +940,46 @@ cancelSignUp.addEventListener('click', () => {
     const signUpRef = document.querySelector('.add');
     signUpRef.reset();
     signUpDropDown.classList.toggle("collapse");
+});
+
+// Detects when the user logs in and logs out
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // User has logged in
+
+        // Show log out and hide log in form
+        const logOutSect = document.querySelector('#logout-section')
+        logOutSect.classList.toggle("hide-private");
+        const navbarItems = document.querySelector('#navbar-items');
+        navbarItems.classList.add("hide-private");
+        console.log('user logged in: ', user);
+        loginForm.classList.add("hide-private");
+        signUpRef.reset();
+
+        // Display 'Welcome (insert username)' in the nav bar
+        const userDocRef = doc(db, 'users', user.uid);
+        getDoc(userDocRef).then((doc) => {
+            let username = doc.data().username;
+            const welcome = document.querySelector('#welcome-user');
+            welcome.style.color = 'white';
+            welcome.innerHTML = 'Welcome ' + username;
+        });
+
+        // Updates the user's doc with the log in time
+        setDoc(userDocRef, { lastSignedIn: serverTimestamp() }, { merge: true });
+    }
+    else {
+        // User has logged out
+
+        // Shows the log in and sign up buttons and the log in form
+        loginForm.classList.remove("hide-private");
+            const logOutSect = document.querySelector('#logout-section')
+            logOutSect.classList.toggle("hide-private");
+            const navbarItems = document.querySelector('#navbar-items');
+            navbarItems.classList.remove("hide-private");
+            const welcome = document.querySelector('#welcome-user');
+            welcome.style.color = 'white';
+            welcome.innerHTML = '';
+            console.log('Log out successful');
+    }
 });

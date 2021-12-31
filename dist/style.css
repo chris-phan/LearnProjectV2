@@ -1,11 +1,7 @@
 body {
     padding: 1rem;
-    background-color: lightblue;
-}
-
-div {
-    padding: 0px;
-    margin: 0px;
+    background-color: #d4d4d4;
+    font-family: Consolas;
 }
 
 img {
@@ -124,4 +120,164 @@ img {
 
 .hide-private {
     display: none;
+}
+
+/* Table styling */
+table {
+    margin-bottom: 3rem;
+    width: 75%;
+
+    /* Centers the table */
+    margin-left: auto;
+    margin-right: auto;
+
+    border: 1px solid black;
+    background-color: black;
+    border-collapse: separate;
+}
+
+thead {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    background-color: #c0c0c0;
+}
+
+td {
+    border-top: 5px solid white;
+    border-left: 5px solid white;
+    border-bottom: 5px solid #808080;
+    border-right: 5px solid #808080;
+    background-color: #c0c0c0;
+}
+
+/* Less padding around the categories */
+td:not(.category) {
+    padding: 1rem;
+}
+
+/* Needed for aligning the categories with the rankings */
+.category {
+    padding-left: 1rem;
+}
+
+/* Styling for the show and hide rankings button */
+#show-rankings {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: auto;
+    border: none;
+    /* background-color: #d4d4d4;
+    color: black; */
+    font-weight: bold;
+    font-size: medium;
+    margin-bottom: 1rem;
+}
+
+/* Invert background and font color when hovered */
+#show-rankings:hover {
+    background-color: black;
+    color: #d4d4d4;
+}
+
+/* Enclose the button text with <> */
+#show-rankings::before {
+    content: "<";
+    color: red;
+}
+#show-rankings::after {
+    content: ">";
+    color: red;
+}
+
+/* Styling for the ranking difficulty buttons */
+.rank-difficulty button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: auto;
+    border: none;
+    /* background-color: #d4d4d4;
+    color: red; */
+    font-weight: bold;
+    font-size: medium;    
+    float: left; /* Float the buttons side by side */
+}
+  
+/* Clear floats (clearfix hack) */
+.rank-difficulty:after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Enclose the button text with <> */
+.rank-difficulty button::after {
+    content: ">";
+    color: black;
+}
+.rank-difficulty button::before {
+    content: "<";
+    color: black;
+}
+ 
+/* Invert background and font color when hovered */
+.rank-difficulty button:hover {
+    background-color: red;
+    color: #d4d4d4;
+}
+
+/* Styling for the ranking type buttons */
+.rank-type button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: auto;
+    border: none;
+    /* background-color: #d4d4d4;
+    color: black; */
+    font-weight: bold;
+    font-size: medium;
+    margin-bottom: 1rem;
+}
+
+/* Enclose the button text with <> */
+.rank-type button::before {
+    content: "<";
+    color: red;
+}
+.rank-type button::after {
+    content: ">";
+    color: red;
+}
+
+/* Invert background and font color when hovered */
+.rank-type button:hover {
+    background-color: black;
+    color: #d4d4d4;
+}
+
+/* Background and font colors when idle */
+.lb-toggle-idle {
+    background-color: #d4d4d4;
+    color: black;
+}
+.rank-diff-idle {
+    background-color: #d4d4d4;
+    color: red;
+}
+.rank-type-idle {
+    background-color: #d4d4d4;
+    color: black;
+}
+
+/* Invert background and font color when clicked */
+.lb-toggle-clicked {
+    background-color: black;
+    color: #d4d4d4;
+}
+.rank-diff-clicked {
+    background-color: red;
+    color: #d4d4d4;
+}
+.rank-type-clicked {
+    background-color: black;
+    color: #d4d4d4;
 }

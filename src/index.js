@@ -62,24 +62,43 @@ displayMineCount(10);
 const leftAlignBtn = document.querySelector('#left-align-btn');
 const centerAlignBtn = document.querySelector('#center-align-btn');
 const rightAlignBtn = document.querySelector('#right-align-btn');
+
 const outerBorder = document.querySelector('#outer-border-id');
+const alignmentSectId = document.querySelector('#alignments');
+const difficulySectId = document.querySelector('#difficulty-section');
+const alignSects = [alignmentSectId, difficulySectId, outerBorder];
 
 leftAlignBtn.addEventListener('click', () => {
     outerBorder.classList.remove('right');
     outerBorder.classList.remove('center-border');
     outerBorder.classList.add('left');
+
+    for (let i = 0; i < alignSects.length; i++) {
+        alignSects[i].classList.remove('right-align');
+        alignSects[i].classList.remove('center-align');
+    }
 });
 
 centerAlignBtn.addEventListener('click', () => {
     outerBorder.classList.remove('right');
     outerBorder.classList.remove('left');
     outerBorder.classList.add('center-border');
+
+    for (let i = 0; i < alignSects.length; i++) {
+        alignSects[i].classList.remove('right-align');
+        alignSects[i].classList.add('center-align');
+    }
 });
 
 rightAlignBtn.addEventListener('click', () => {
     outerBorder.classList.remove('center-border');
     outerBorder.classList.remove('left');
     outerBorder.classList.add('right');
+
+    for (let i = 0; i < alignSects.length; i++) {
+        alignSects[i].classList.remove('center-align');
+        alignSects[i].classList.add('right-align');
+    }
 });
 
 // Beginner button

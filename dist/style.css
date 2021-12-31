@@ -105,9 +105,15 @@ img {
     margin-right: auto;
 }
 
-.center-border {
+.center-align {
     margin-left: auto;
     margin-right: auto;
+    text-align: center;
+}
+
+.right-align {
+    margin-left: auto;
+    text-align: right;
 }
 
 .left {

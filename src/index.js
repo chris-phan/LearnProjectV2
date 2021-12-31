@@ -11,7 +11,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword, signOut,
     onAuthStateChanged,
-    reload
+    reload,
+    onIdTokenChanged
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -68,7 +69,6 @@ const difficulySectId = document.querySelector('#difficulty-section');
 const alignSects = [alignmentSectId, difficulySectId, outerBorder];
 
 leftAlignBtn.addEventListener('click', () => {
-    
     for (let i = 0; i < alignSects.length; i++) {
         alignSects[i].classList.remove('right-align');
         alignSects[i].classList.remove('center-align');
@@ -76,7 +76,6 @@ leftAlignBtn.addEventListener('click', () => {
 });
 
 centerAlignBtn.addEventListener('click', () => {
-
     for (let i = 0; i < alignSects.length; i++) {
         alignSects[i].classList.remove('right-align');
         alignSects[i].classList.add('center-align');
@@ -84,7 +83,6 @@ centerAlignBtn.addEventListener('click', () => {
 });
 
 rightAlignBtn.addEventListener('click', () => {
-
     for (let i = 0; i < alignSects.length; i++) {
         alignSects[i].classList.remove('center-align');
         alignSects[i].classList.add('right-align');
@@ -95,36 +93,21 @@ rightAlignBtn.addEventListener('click', () => {
 const beginnerDiffBtn = document.querySelector('#diff-beg');
 beginnerDiffBtn.addEventListener('click', () => {
     difficulty = 'beginner';
-    generateCoverTiles(difficulty);
-    numClicks = 0;
-    stopTimer();
-    resetTimer();
-    numMines = getNumMines(difficulty);
-    displayMineCount(numMines);
+    resetGame();
 });
 
 // Intermediate button
 const intermediateDiffBtn = document.querySelector('#diff-int');
 intermediateDiffBtn.addEventListener('click', () => {
     difficulty = 'intermediate';
-    generateCoverTiles(difficulty);
-    numClicks = 0;
-    stopTimer();
-    resetTimer();
-    numMines = getNumMines(difficulty);
-    displayMineCount(numMines);
+    resetGame();
 });
 
 // Expert button
 const expertDiffBtn = document.querySelector('#diff-exp');
 expertDiffBtn.addEventListener('click', () => {
     difficulty = 'expert';
-    generateCoverTiles(difficulty);
-    numClicks = 0;
-    stopTimer();
-    resetTimer();
-    numMines = getNumMines(difficulty);
-    displayMineCount(numMines);
+    resetGame();
 });
 
 // Creates the cover tiles
@@ -201,6 +184,21 @@ function setCoverTileProperties(totMines) {
                     setNumberTiles();
                     setNumberTileProperties();
                     displayMineCount(totMines);
+
+                    // Firebase: increment the total number of games played by the user
+                    const user = auth.currentUser;
+                    if (user !== null) {
+                        const userDocRef = doc(db, 'users', user.uid);
+                        if (difficulty == 'beginner') {
+                            updateDoc(userDocRef, { beginnerGamesPlayed: increment(1) });
+                        }
+                        else if (difficulty == 'intermediate') {
+                            updateDoc(userDocRef, { intermediateGamesPlayed: increment(1) });
+                        }
+                        else if (difficulty == 'expert') {
+                            updateDoc(userDocRef, { expertGamesPlayed: increment(1) });
+                        }
+                    }
                 }
 
                 // Always reveal a tile if an unflagged cover tile is left clicked
@@ -232,7 +230,7 @@ function setCoverTileProperties(totMines) {
 function reveal(coverTile) {
     // Parses coverTile's id to get 'tile-row-#-col-#'
     const numberTile = document.querySelector('#' + coverTile.id.substring(6));
-    
+
     // If the player clicks on a mine, they lose
     // Else if the tile underneath the cover tile is 0, chain reveal
     // Else, just reveal it
@@ -247,6 +245,27 @@ function reveal(coverTile) {
         const smileyBtn = document.querySelector('#smiley-img');
         smileyBtn.src = '../images/lose.png';
         showAllMines();
+
+        // Firebase: calculate the win rate
+        const user = auth.currentUser;
+        if (user !== null) {
+            const userDocRef = doc(db, 'users', user.uid);
+            let winRate;
+            getDoc(userDocRef).then((doc) => {
+                if (difficulty == 'beginner') {
+                    winRate = doc.data().beginnerWins / doc.data().beginnerGamesPlayed;
+                    updateDoc(userDocRef, { beginnerWinRate: winRate });
+                }
+                else if (difficulty == 'intermediate') {
+                    winRate = doc.data().intermediateWins / doc.data().intermediateGamesPlayed;
+                    updateDoc(userDocRef, { intermediateWinRate: winRate });
+                }
+                else if (difficulty == 'expert') {
+                    winRate = doc.data().expertWins / doc.data().expertGamesPlayed;
+                    updateDoc(userDocRef, { expertWinRate: winRate });
+                }
+            });
+        }
     }
     else if (numberTile !== null && numberTile.src.includes('tile_0')) {
         chainReveal(numberTile);
@@ -684,23 +703,21 @@ function setSmileyProperties() {
     smileyBtn.addEventListener('mouseup', () => {
         smileyBtn.classList.remove('smiley-img-pressed');
         smileyBtn.classList.add('smiley-img-idle');
-        generateCoverTiles(difficulty);
-        numClicks = 0;
-        stopPlaying = false;
-        numMines = getNumMines(difficulty);
-        if (difficulty === 'beginner') {
-            displayMineCount(10);
-        }
-        else if (difficulty === 'intermediate') {
-            displayMineCount(40);
-        }
-        else if (difficulty === 'expert') {
-            displayMineCount(99);
-        }
-        smileyBtn.src = '../images/smiley.png'; // changes to normal smile after reset
-        stopTimer();
-        resetTimer();
+        resetGame();
     });
+}
+
+function resetGame() {
+    generateCoverTiles(difficulty);
+    numClicks = 0;
+    stopPlaying = false;
+    numMines = getNumMines(difficulty);
+    displayMineCount(numMines);
+    stopTimer();
+    resetTimer();
+
+    const smileyBtn = document.querySelector('#smiley-img');
+    smileyBtn.src = '../images/smiley.png'; // changes to normal smile after reset
 }
 
 // Code to check win condition
@@ -729,34 +746,46 @@ function win() {
     displayMineCount(0);
 
     // Firebase: updates the win and time fields according to the difficulty played
+    // Also update win rate
     const time = stopTimer();
     const user = auth.currentUser;
     if (user !== null) {
         const userDocRef = doc(db, 'users', user.uid);
-
+        let winRate;
+        
         // Updates the time field if it doesn't exist or is faster than the previous best time
-        // Also increments the wins based on difficulty
+        // Also increments the wins based on difficulty and updates win rate
+        // + 1 is necessary for the calculating the win rate since the field that holds the # of wins doesn't update instantly
         getDoc(userDocRef).then((doc) => {
             if (difficulty == 'beginner') {
-                if (doc.data().bestBeginnerTime == undefined || doc.data().bestBeginnerTime > time) {
-                    updateDoc(userDocRef, { bestBeginnerTime: time });
+                if (doc.data().beginnerTime == undefined || doc.data().beginnerTime > time) {
+                    updateDoc(userDocRef, { beginnerTime: time });
                 }
 
-                updateDoc(userDocRef, { beginnerWins: increment(1) });       
+                updateDoc(userDocRef, { beginnerWins: increment(1) });
+
+                winRate = (doc.data().beginnerWins + 1) / doc.data().beginnerGamesPlayed;
+                updateDoc(userDocRef, { beginnerWinRate: winRate });
             }
             else if (difficulty == 'intermediate') {
-                if (doc.data().bestIntermediateTime == undefined || doc.data().bestIntermediateTime > time) {
-                    updateDoc(userDocRef, { bestIntermediateTime: time });
+                if (doc.data().intermediateTime == undefined || doc.data().intermediateTime > time) {
+                    updateDoc(userDocRef, { intermediateTime: time });
                 }
 
                 updateDoc(userDocRef, { intermediateWins: increment(1) });
+
+                winRate = (doc.data().intermediateWins + 1) / doc.data().intermediateGamesPlayed;
+                updateDoc(userDocRef, { intermediateWinRate: winRate });
             }
             else if (difficulty == 'expert') {
-                if (doc.data().bestExpertTime == undefined || doc.data().bestExpertTime > time) {
-                    updateDoc(userDocRef, { bestExpertTime: time });
+                if (doc.data().expertTime == undefined || doc.data().expertTime > time) {
+                    updateDoc(userDocRef, { expertTime: time });
                 }
 
                 updateDoc(userDocRef, { expertWins: increment(1) });
+
+                winRate = (doc.data().expertWins + 1) / doc.data().expertGamesPlayed;
+                updateDoc(userDocRef, { expertWinRate: winRate });
             }
         });
 
@@ -925,8 +954,8 @@ signUpRef.addEventListener('submit', (e) => {
         resultMessage.style.color = 'red';
         resultMessage.innerHTML = error.message;
         signUpRef.reset();
-    })
-})
+    });
+});
 
 // Log out
 const logOutBtn = document.querySelector('#logout');
@@ -983,13 +1012,236 @@ onAuthStateChanged(auth, (user) => {
 
         // Shows the log in and sign up buttons and the log in form
         loginForm.classList.remove("hide-private");
-            const logOutSect = document.querySelector('#logout-section')
-            logOutSect.classList.toggle("hide-private");
-            const navbarItems = document.querySelector('#navbar-items');
-            navbarItems.classList.remove("hide-private");
-            const welcome = document.querySelector('#welcome-user');
-            welcome.style.color = 'white';
-            welcome.innerHTML = '';
-            console.log('Log out successful');
+        loginForm.reset();
+        const logOutSect = document.querySelector('#logout-section');
+        logOutSect.classList.add("hide-private");
+        const navbarItems = document.querySelector('#navbar-items');
+        navbarItems.classList.remove("hide-private");
+        const welcome = document.querySelector('#welcome-user');
+        welcome.style.color = 'white';
+        welcome.innerHTML = '';
     }
 });
+
+// Leaderboard code
+// Global variables for leaderboard (lb stands for leaderboard)
+var lbSelectedDifficulty;
+var lbSelectedType;
+
+// Clicking on the show/hide rankings button will change the visibility of the leaderboard
+const showRankingsBtn = document.querySelector('#show-rankings');
+showRankingsBtn.addEventListener('click', () => {
+    const rankings = document.querySelector('#rankings');
+    const rankDifficulty = document.querySelector('.rank-difficulty');
+    const rankType = document.querySelector('.rank-type');
+
+    // If the leaderboard is hidden, display it
+    // Else, hide it
+    if (rankings.hidden) {
+        rankings.hidden = false;
+        rankDifficulty.hidden = false;
+        rankType.hidden = false;
+        showRankingsBtn.innerHTML = 'HIDE RANKINGS';
+
+        // Highlights the button
+        showRankingsBtn.classList.remove('lb-toggle-idle');
+        showRankingsBtn.classList.add('lb-toggle-clicked');
+
+        // By default, the top expert times are shown
+        lbSelectedDifficulty = 'expert';
+        lbSelectedType = 'Time';
+        displayRank(lbSelectedDifficulty + lbSelectedType);
+        highlightButtons(lbSelectedDifficulty, lbSelectedType);
+        console.log(document.querySelector('#rank-type-time'));
+    }
+    else {
+        rankings.hidden = true;
+        rankDifficulty.hidden = true;
+        rankType.hidden = true;
+        showRankingsBtn.innerHTML = 'SHOW RANKINGS';
+
+        // Unhighlights the button
+        showRankingsBtn.classList.remove('lb-toggle-clicked');
+        showRankingsBtn.classList.add('lb-toggle-idle');
+
+    }
+});
+
+// Beginner rank button
+const beginnerRanking = document.querySelector('#rank-diff-beginner');
+beginnerRanking.addEventListener('click', () => {
+    lbSelectedDifficulty = 'beginner';
+    displayRank(lbSelectedDifficulty + lbSelectedType);
+    highlightButtons(lbSelectedDifficulty, lbSelectedType);
+});
+
+// Intermediate rank button
+const intermediateRanking = document.querySelector('#rank-diff-intermediate');
+intermediateRanking.addEventListener('click', () => {
+    lbSelectedDifficulty = 'intermediate';
+    displayRank(lbSelectedDifficulty + lbSelectedType);
+    highlightButtons(lbSelectedDifficulty, lbSelectedType);
+});
+
+// Expert rank button
+const expertRanking = document.querySelector('#rank-diff-expert');
+expertRanking.addEventListener('click', () => {
+    lbSelectedDifficulty = 'expert';
+    displayRank(lbSelectedDifficulty + lbSelectedType);
+    highlightButtons(lbSelectedDifficulty, lbSelectedType);
+});
+
+// Time rank button
+const timeRanking = document.querySelector('#rank-type-time');
+timeRanking.addEventListener('click', () => {
+    lbSelectedType = 'Time';
+    displayRank(lbSelectedDifficulty + lbSelectedType);
+    highlightButtons(lbSelectedDifficulty, lbSelectedType);
+});
+
+// Wins rank button
+const winsRanking = document.querySelector('#rank-type-wins');
+winsRanking.addEventListener('click', () => {
+    lbSelectedType = 'Wins';
+    displayRank(lbSelectedDifficulty + lbSelectedType);
+    highlightButtons(lbSelectedDifficulty, lbSelectedType);
+});
+
+// Win rate rank button
+const winRateRanking = document.querySelector('#rank-type-win-rate');
+winRateRanking.addEventListener('click', () => {
+    lbSelectedType = 'WinRate';
+    displayRank(lbSelectedDifficulty + lbSelectedType);
+    highlightButtons(lbSelectedDifficulty, lbSelectedType);
+});
+
+
+// Displays the top five users of the specified rank
+// Rank types: 'beginnerTime', 'intermediateTime', 'expertTime',
+//             'beginnerWins', 'intermediateWins', 'expertWins'
+//             'beginnerWinRate', intermediateWinRate, 'expertWinRate'
+function displayRank(rankType) {
+    // Query the top 5 users according to rankType
+    let q;
+    switch (rankType) {
+        case 'beginnerTime':
+            q = query(collection(db, 'users'), orderBy('beginnerTime', 'asc'), limit(5));
+            break;
+        case 'intermediateTime':
+            q = query(collection(db, 'users'), orderBy('intermediateTime', 'asc'), limit(5));
+            break;
+        case 'expertTime':
+            q = query(collection(db, 'users'), orderBy('expertTime', 'asc'), limit(5));
+            break;
+        case 'beginnerWins':
+            q = query(collection(db, 'users'), orderBy('beginnerWins', 'desc'), limit(5));
+            break;
+        case 'intermediateWins':
+            q = query(collection(db, 'users'), orderBy('intermediateWins', 'desc'), limit(5));
+            break;
+        case 'expertWins':
+            q = query(collection(db, 'users'), orderBy('expertWins', 'desc'), limit(5));
+            break;
+        case 'beginnerWinRate':
+            q = query(collection(db, 'users'), orderBy('beginnerWinRate', 'desc'), limit(5));
+            break;
+        case 'intermediateWinRate':
+            q = query(collection(db, 'users'), orderBy('intermediateWinRate', 'desc'), limit(5));
+            break;
+        case 'expertWinRate':
+            q = query(collection(db, 'users'), orderBy('expertWinRate', 'desc'), limit(5));
+            break;
+        default:
+            console.log('error in switch statement')
+    }
+
+    // Updates the score label
+    const scoreLabel = document.querySelector('#score');
+    if (rankType.includes('Time')) {
+        scoreLabel.innerHTML = '<b>TIME</b>';
+    }
+    else if (rankType.includes('Wins')) {
+        scoreLabel.innerHTML = '<b>WINS</b>';
+    }
+    else if (rankType.includes('WinRate')) {
+        scoreLabel.innerHTML = '<b>WIN RATE</b>';
+    }
+
+    // Real time listener
+    onSnapshot(q, (snapshot) => {
+        // Looks for the top 5 users according to rankType and adds them to an array
+        let topUsers = [];
+        snapshot.docs.forEach((doc) => {
+            topUsers.push(doc);
+        });
+
+        const rankings = document.querySelector('#rankings');
+        for (let i = 0; i < topUsers.length; i++) {
+            const row = document.querySelector('#row' + (i + 1) + '');
+
+            // Shows the table row if its hidden
+            if (row.hidden) {
+                row.hidden = false;
+            }
+
+            // Updates the ranking # cell
+            let rankCell = rankings.rows[i + 1].cells[0];
+            rankCell.innerHTML = "<b>" + (i + 1) + "</b>";
+
+            // Updates the username cell
+            let nameCell = rankings.rows[i + 1].cells[1];
+            nameCell.innerHTML = topUsers[i].data().username;
+
+            // Updates the score cell
+            let scoreCell = rankings.rows[i + 1].cells[2];
+            // Brackets after data() allow for getting data using a variable field name
+            if (rankType.includes('Time')) {
+                scoreCell.innerHTML = topUsers[i].data()[rankType] / 1000;
+            }
+            else if (rankType.includes('Wins')) {
+                scoreCell.innerHTML = topUsers[i].data()[rankType];
+            }
+            else if (rankType.includes('WinRate')) {
+                scoreCell.innerHTML = Math.round(topUsers[i].data()[rankType] * 100000) / 1000 + '%';
+            }
+        }
+    });
+}
+
+// Highlights the selected buttons, unhighlights deselected buttons
+function highlightButtons(diff, type) {
+    // Gets all the rank buttons
+    const rankBtns = document.querySelectorAll('[id^="rank-"]');
+
+    if (type == 'WinRate') {
+        type = 'win-rate'
+    }
+    type = type.toLowerCase();
+    
+
+    for (let i = 0; i < rankBtns.length; i++) {
+        if (rankBtns[i].classList.contains('rank-diff-clicked') && !rankBtns[i].id.includes(diff)) {
+            // Unhighlight the previously selected difficulty button
+            rankBtns[i].classList.remove('rank-diff-clicked');
+            rankBtns[i].classList.add('rank-diff-idle');
+        }
+        else if (rankBtns[i].classList.contains('rank-type-clicked') && !rankBtns[i].id.includes(type)) {
+            // Unhighlight the previously selected type button
+            console.log('im here', rankBtns[i]);
+
+            rankBtns[i].classList.remove('rank-type-clicked');
+            rankBtns[i].classList.add('rank-type-idle');
+        }
+        else if (rankBtns[i].id.includes(diff)) {
+            // Highlight selected difficulty button
+            rankBtns[i].classList.remove('rank-diff-idle');
+            rankBtns[i].classList.add('rank-diff-clicked');
+        }
+        else if (rankBtns[i].id.includes(type)) {
+            // Highlights slected type button
+            console.log('im in here', rankBtns[i]);
+            rankBtns[i].classList.remove('rank-type-idle');
+            rankBtns[i].classList.add('rank-type-clicked');
+        }
+    }
+}

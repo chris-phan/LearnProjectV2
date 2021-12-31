@@ -18,7 +18,8 @@
         <div class="col-2 d-flex flex-row">
             <p style="margin-top: 1rem;" id="welcome-user"></p>
             <div id="navbar-items">
-                <a id="sign-up-button" type="button" style="text-decoration: none; color: white;" class="p-2">Sign-Up</a>
+                <a id="sign-up-button" type="button" style="text-decoration: none; color: white;"
+                    class="p-2">Sign-Up</a>
                 <a style="text-decoration: none; color: white;" href="#loginForm" class="p-2">Login</a>
             </div>
         </div>
@@ -27,18 +28,19 @@
 
     <div style="margin-top: 5rem;" class="collapse" id="sign-up-dropdown">
         <div class="card">
+
             <body id="signup">
-    
+
                 <h2 style="font: 3rem; margin-top: 4rem;" class="text-center">Sign Up</h2>
-            
+
                 <br>
                 <br>
-            
-                <div style="background-color: aliceblue; padding: 1rem;" class= "text-center">
+
+                <div style="background-color: aliceblue; padding: 1rem;" class="text-center">
                     <form class="add">
                         <div style="padding: 1rem;" class="form-group">
                             <label for="username">Username:</label>
-                            <input type="text" placeholder="Enter username" name="username" required >
+                            <input type="text" placeholder="Enter username" name="username" required>
                         </div>
                         <div style="padding: 1rem;" class="form-group">
                             <label for="password">Password:</label>
@@ -48,7 +50,7 @@
                             <label for="email">Email:</label>
                             <input type="email" placeholder="Enter email" name="email" required>
                         </div>
-                    
+
                         <button type="submit" class="btn btn-primary">Sign-Up</button>
                         <button id="cancel-signup" class="btn btn-danger">Cancel</button>
                     </form>
@@ -60,6 +62,55 @@
 
     <h1 style="margin-top: 5rem;" class="text-center display-1">Minesweeper</h1>
     <br>
+
+    <!-- Leaderboard -->
+    <button class="lb-toggle-idle" id="show-rankings">SHOW RANKINGS</button>
+    <br>
+    <div class="rank-difficulty" hidden>
+        <button class="rank-diff-idle" id="rank-diff-beginner">BEGINNER</button>
+        <button class="rank-diff-idle" id="rank-diff-intermediate">INTERMEDIATE</button>
+        <button class="rank-diff-idle" id="rank-diff-expert">EXPERT</button>
+    </div>
+    <div class="rank-type" hidden>
+        <button class="rank-type-idle" id="rank-type-time">TIME</button>
+        <button class="rank-type-idle" id="rank-type-wins">WINS</button>
+        <button class="rank-type-idle" id="rank-type-win-rate">WIN RATE</button>
+    </div>
+
+    <table id="rankings" hidden>
+        <thead id="thead">
+            <td class="category"><b>RANK</b></td>
+            <td class="category"><b>USERNAME</b></td>
+            <td class="category" id="score"><b>TIME</b></td>
+        </thead>
+        <tbody id="tbody">
+            <tr id="row1" hidden>
+                <td>rank</td>
+                <td>name</td>
+                <td>score</td>
+            </tr>
+            <tr id="row2" hidden>
+                <td>rank</td>
+                <td>name</td>
+                <td>score</td>
+            </tr>
+            <tr id="row3" hidden>
+                <td>rank</td>
+                <td>name</td>
+                <td>score</td>
+            </tr>
+            <tr id="row4" hidden>
+                <td>rank</td>
+                <td>name</td>
+                <td>score</td>
+            </tr>
+            <tr id="row5" hidden>
+                <td>rank</td>
+                <td>name</td>
+                <td>score</td>
+            </tr>
+        </tbody>
+    </table>
 
     <div id="alignments">
         <h2>Set Alignment</h2>
@@ -80,17 +131,24 @@
         <div id="border2" draggable="false">
             <div id="border3" draggable="false">
                 <div class="num-mines" draggable="false">
-                    <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-left" draggable="false">
-                    <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-mid" draggable="false">
-                    <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-right" draggable="false">
+                    <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-left"
+                        draggable="false">
+                    <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-mid"
+                        draggable="false">
+                    <img src="../images/red_0.png" alt="red number" class="left red-num" id="red-num-mine-right"
+                        draggable="false">
                 </div>
                 <div class="timer" draggable="false">
-                    <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-right" draggable="false">
-                    <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-mid" draggable="false">
-                    <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-left" draggable="false">
+                    <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-right"
+                        draggable="false">
+                    <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-mid"
+                        draggable="false">
+                    <img src="../images/red_0.png" alt="red number" class="right red-num" id="red-num-timer-left"
+                        draggable="false">
                 </div>
                 <div class="smiley" draggable="false">
-                    <img src="../images/smiley.png" alt="Smiley" class="center smiley-img-idle" id="smiley-img" draggable="false">
+                    <img src="../images/smiley.png" alt="Smiley" class="center smiley-img-idle" id="smiley-img"
+                        draggable="false">
                 </div>
             </div>
             <div id="border4" draggable="false">

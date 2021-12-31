@@ -69,10 +69,6 @@ const difficulySectId = document.querySelector('#difficulty-section');
 const alignSects = [alignmentSectId, difficulySectId, outerBorder];
 
 leftAlignBtn.addEventListener('click', () => {
-    outerBorder.classList.remove('right');
-    outerBorder.classList.remove('center-border');
-    outerBorder.classList.add('left');
-
     for (let i = 0; i < alignSects.length; i++) {
         alignSects[i].classList.remove('right-align');
         alignSects[i].classList.remove('center-align');
@@ -80,10 +76,6 @@ leftAlignBtn.addEventListener('click', () => {
 });
 
 centerAlignBtn.addEventListener('click', () => {
-    outerBorder.classList.remove('right');
-    outerBorder.classList.remove('left');
-    outerBorder.classList.add('center-border');
-
     for (let i = 0; i < alignSects.length; i++) {
         alignSects[i].classList.remove('right-align');
         alignSects[i].classList.add('center-align');
@@ -91,10 +83,6 @@ centerAlignBtn.addEventListener('click', () => {
 });
 
 rightAlignBtn.addEventListener('click', () => {
-    outerBorder.classList.remove('center-border');
-    outerBorder.classList.remove('left');
-    outerBorder.classList.add('right');
-
     for (let i = 0; i < alignSects.length; i++) {
         alignSects[i].classList.remove('center-align');
         alignSects[i].classList.add('right-align');

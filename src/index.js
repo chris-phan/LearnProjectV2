@@ -1176,10 +1176,18 @@ function displayRank(rankType) {
         });
 
         const rankings = document.querySelector('#rankings');
+        
+        // Hide all rows initially
+        const numRows = 5;
+        for (let i = 0; i < numRows; i++) {
+            const row = document.querySelector('#row' + (i + 1) + '');
+            row.hidden = true;
+        }
+
         for (let i = 0; i < topUsers.length; i++) {
             const row = document.querySelector('#row' + (i + 1) + '');
 
-            // Shows the table row if its hidden
+            // Reveal rows if the data in that row exists
             if (row.hidden) {
                 row.hidden = false;
             }

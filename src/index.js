@@ -245,6 +245,7 @@ function reveal(coverTile) {
         const smileyBtn = document.querySelector('#smiley-img');
         smileyBtn.src = '../images/lose.png';
         showAllMines();
+        checkForWrongFlag();
 
         // Firebase: calculate the win rate
         const user = auth.currentUser;
@@ -296,7 +297,7 @@ function chainReveal(tile) {
         }
 
         const checkCoverTile = document.querySelector('#cover-' + checkTile.id);
-        if (checkCoverTile.classList.contains('revealed')) {
+        if (checkCoverTile.classList.contains('revealed') || checkCoverTile.classList.contains('flag')) {
             continue;
         }
 
@@ -434,6 +435,37 @@ function flagRemainingMines() {
 
         coverTileOverMine.src = '../images/cover_block_flag.png';
     }
+}
+
+// If a cover tile that is not over a mine is flagged, change its image to mine_x.png
+function checkForWrongFlag() {
+    // Convert from NodeList to array
+    const allMines = Array.from(document.querySelectorAll('[id^="mine"]'));
+
+    const allFlaggedCoverTiles = document.querySelectorAll('.flag');
+
+    // Loop through each flagged cover tile and check if it is over a mine, if it isn't change it to mine_x.png
+    for (let i = 0; i < allFlaggedCoverTiles.length; i++) {
+        let isInvalid = true;
+        for (let j = 0; j < allMines.length; j++) {
+            // Parses the mine id and gets rid of 'mine-' to get row-#-col-#
+            const mineRowAndCol = allMines[j].id.substring(5);
+
+            // If the flagged cover tile has the same id, break out of the loop and remove that mine from the array 
+            if (allFlaggedCoverTiles[i].id.includes(mineRowAndCol)) {
+                console.log('isvalid');
+                // Removes the mine from the array
+                allMines.splice(j, 1);
+                isInvalid = false;
+                break;
+            }
+        }
+        // If the flagged cover tile makes it through the inner loop without isInvalid being changed to false, change it to mine_x.png
+        if (isInvalid) {
+            allFlaggedCoverTiles[i].src = '../images/mine_x.png';
+        }
+    }
+
 }
 
 // Set blank tiles and cover tiles
@@ -752,7 +784,7 @@ function win() {
     if (user !== null) {
         const userDocRef = doc(db, 'users', user.uid);
         let winRate;
-        
+
         // Updates the time field if it doesn't exist or is faster than the previous best time
         // Also increments the wins based on difficulty and updates win rate
         // + 1 is necessary for the calculating the win rate since the field that holds the # of wins doesn't update instantly
@@ -1176,7 +1208,7 @@ function displayRank(rankType) {
         });
 
         const rankings = document.querySelector('#rankings');
-        
+
         // Hide all rows initially
         const numRows = 5;
         for (let i = 0; i < numRows; i++) {
@@ -1225,7 +1257,7 @@ function highlightButtons(diff, type) {
         type = 'win-rate'
     }
     type = type.toLowerCase();
-    
+
 
     for (let i = 0; i < rankBtns.length; i++) {
         if (rankBtns[i].classList.contains('rank-diff-clicked') && !rankBtns[i].id.includes(diff)) {

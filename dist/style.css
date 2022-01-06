@@ -11,6 +11,16 @@ img {
     user-select: none;
 }
 
+label {
+    width: 100px; 
+    text-align: right;
+    margin-right: 1rem;
+}
+
+input {
+    width: 250px;
+}
+
 .smiley-img-idle {
     border-top: 3px solid white;
     border-left: 3px solid white;
@@ -51,6 +61,8 @@ img {
     border-bottom: 5px solid #808080;
     border-right: 5px solid #808080;
     display: table;
+    margin-top: 0;
+    margin-bottom: 2rem;
 }
 
 #border2 {
@@ -122,10 +134,6 @@ img {
 
 .right {
     float:right;
-}
-
-.hide-private {
-    display: none;
 }
 
 /* Table styling */
@@ -264,6 +272,7 @@ td:not(.category) {
 .lb-toggle-idle {
     background-color: #d4d4d4;
     color: black;
+    margin-top: 2rem;
 }
 .rank-diff-idle {
     background-color: #d4d4d4;
@@ -280,10 +289,107 @@ td:not(.category) {
     color: #d4d4d4;
 }
 .rank-diff-clicked {
-    background-color: red;
+    background-color: crimson;
     color: #d4d4d4;
 }
 .rank-type-clicked {
     background-color: black;
     color: #d4d4d4;
+}
+
+/* Sign up button styling */
+#showSignUpBtn {
+    border-radius: 20px;
+    border-color: black;
+    background-color: lightgreen;
+    width: 100px;
+    margin-top: 1rem;
+}
+
+/* Log in button styling */
+#showLoginBtn {
+    border-radius: 20px;
+    border-color: black;
+    background-color: lightgreen;
+    width: 100px;
+    margin-top: 1rem;
+}
+
+/* Welcome text styling */
+#welcomeText {
+    text-align: left;
+    display: inline-block;
+    margin-right: 4rem;
+}
+
+#logOutBtn {
+    border-radius: 20px;
+    border-color: black;
+    background-color: yellowgreen;
+    width: 100px;
+    margin-top: 1rem;
+}
+
+/* Log in and sign up form styling */
+#loginForm, #sign-up-dropdown {
+    margin-top: 5rem;
+}
+
+#loginBtn, #signUpBtn {
+    border-radius: 20px;
+    border-color: black;
+    background-color: skyblue;
+    width: 100px;
+    margin-top: 1rem;
+}
+
+#loginCancelBtn, #signUpCancelBtn {
+    border-radius: 20px;
+    border-color: black;
+    background-color: crimson;
+    width: 100px;
+    margin-top: 1rem;
+}
+
+/* Difficulty button styling */
+#diff-beg, #diff-int, #diff-exp {
+    border: none;
+    background-color: #d4d4d4;
+    font-weight: bold;
+}
+
+#diff-beg:hover, #diff-int:hover, #diff-exp:hover {
+    background-color: black;
+    color: #d4d4d4;
+}
+
+#diff-beg::before, #diff-int::before, #diff-exp::before {
+    content: "<";
+    color: cornflowerblue;
+}
+
+#diff-beg::after, #diff-int::after, #diff-exp::after {
+    content: ">";
+    color: cornflowerblue;
+}
+
+/* Alignment buttons styling */
+#left-align-btn, #center-align-btn, #right-align-btn {
+    border: none;
+    background-color: #d4d4d4;
+    font-weight: bold;
+}
+
+#left-align-btn:hover, #center-align-btn:hover, #right-align-btn:hover {
+    background-color: black;
+    color: #d4d4d4;
+}
+
+#left-align-btn::before, #center-align-btn::before, #right-align-btn::before {
+    content: "<";
+    color: limegreen;
+}
+#left-align-btn::after, #center-align-btn::after, #right-align-btn::after {
+    content: ">";
+    color: limegreen;
 }

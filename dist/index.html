@@ -12,55 +12,75 @@
 </head>
 
 <body>
-    <nav class="navbar fixed-top navbar-dark bg-dark text-white text-center">
+    <!-- Nav bar -->
+    <!-- <nav class="navbar fixed-top navbar-dark bg-dark text-white text-center">
         <div class="col-2 navbar-brand">Minesweeper</div>
         <div class="col-6"> </div>
         <div class="col-2 d-flex flex-row">
             <p style="margin-top: 1rem;" id="welcome-user"></p>
             <div id="navbar-items">
                 <a id="sign-up-button" type="button" style="text-decoration: none; color: white;"
-                    class="p-2">Sign-Up</a>
-                <a style="text-decoration: none; color: white;" href="#loginForm" class="p-2">Login</a>
+                    class="p-2">Sign up</a>
+                <a style="text-decoration: none; color: white;" type="button" class="p-2" id="nav-login">Log in</a>
             </div>
         </div>
         <div class="col-2"> </div>
-    </nav>
+    </nav> -->
 
-    <div style="margin-top: 5rem;" class="collapse" id="sign-up-dropdown">
-        <div class="card">
+    <!-- Sign up button -->
+    <button id="showSignUpBtn">Sign up</button>
 
-            <body id="signup">
+    <!-- Log in button -->
+    <button id="showLoginBtn">Log in</button>
 
-                <h2 style="font: 3rem; margin-top: 4rem;" class="text-center">Sign Up</h2>
+    <!-- Welcome text -->
+    <p id="welcomeText" hidden>Username</p>
 
-                <br>
-                <br>
+    <!-- Log out button -->
+    <button id="logOutBtn" hidden>Log out</button>
 
-                <div style="background-color: aliceblue; padding: 1rem;" class="text-center">
-                    <form class="add">
-                        <div style="padding: 1rem;" class="form-group">
-                            <label for="username">Username:</label>
-                            <input type="text" placeholder="Enter username" name="username" required>
-                        </div>
-                        <div style="padding: 1rem;" class="form-group">
-                            <label for="password">Password:</label>
-                            <input type="password" placeholder="Enter password" name="password" required>
-                        </div>
-                        <div style="padding: 1rem;" class="form-group">
-                            <label for="email">Email:</label>
-                            <input type="email" placeholder="Enter email" name="email" required>
-                        </div>
+    <!-- Log in form -->
+    <form id="loginForm" class="login text-center" hidden>
+        <h2 style="margin-top: 2rem;"><b>Log in</b></h2>
 
-                        <button type="submit" class="btn btn-primary">Sign-Up</button>
-                        <button id="cancel-signup" class="btn btn-danger">Cancel</button>
-                    </form>
-                </div>
-                <h2 id="resultMessage"></h2>
-            </body>
+        <div style="padding: 1rem;" class="form-group">
+            <label for="email"><u>Email</u></label>
+            <input type="email" placeholder="Enter email" name="email" required>
         </div>
-    </div>
 
-    <h1 style="margin-top: 5rem;" class="text-center display-1">Minesweeper</h1>
+        <div style="padding: 1rem;" class="form-group">
+            <label for="password"><u>Password</u></label>
+            <input type="password" placeholder="Enter password" name="password" required>
+        </div>
+
+        <button id="loginBtn">Log in</button>
+        <button id="loginCancelBtn">Cancel</button>
+    </form>
+
+    <!-- Sign up form -->
+    <form class="add text-center" id="sign-up-dropdown" hidden>
+        <h2 style="margin-top: 2rem;"><b>Sign up</b></h2>
+
+        <div style="padding: 1rem;" class="form-group">
+            <label for="username"><u>Username</u></label>
+            <input type="text" placeholder="Enter username" name="username" required>
+        </div>
+
+        <div style="padding: 1rem;" class="form-group">
+            <label for="email"><u>Email</u></label>
+            <input type="email" placeholder="Enter email" name="email" required>
+        </div>
+
+        <div style="padding: 1rem;" class="form-group">
+            <label for="password"><u>Password</u></label>
+            <input type="password" placeholder="Enter password" name="password" required>
+        </div>
+
+        <button type="submit" id="signUpBtn">Sign up</button>
+        <button id="signUpCancelBtn">Cancel</button>
+
+        <h2 id="resultMessage"></h2>
+    </form>
     <br>
 
     <!-- Leaderboard -->
@@ -112,21 +132,7 @@
         </tbody>
     </table>
 
-    <div id="alignments">
-        <h2>Set Alignment</h2>
-        <button id='left-align-btn' class='secondary'>Left</button>
-        <button id='center-align-btn' class='secondary'>Center</button>
-        <button id='right-align-btn' class='secondary'>Right</button>
-    </div>
-
-    <div id="difficulty-section" style="padding-bottom: 3rem; margin-top: 1rem;">
-        <h2>Difficulty</h2>
-        <button id="diff-beg">Beginner</button>
-        <button id="diff-int">Intermediate</button>
-        <button id="diff-exp">Expert</button>
-        <button id="diff-cus">Custom</button>
-    </div>
-
+    <!-- Board -->
     <div id="outer-border-id" class="outer-border" draggable="false">
         <div id="border2" draggable="false">
             <div id="border3" draggable="false">
@@ -158,39 +164,20 @@
         </div>
     </div>
 
-    <br>
-    <h2>For testing purposes</h2>
-    <button id="show-mines">Show mines (click after first click)</button>
-    <button id="start-timer">start timer</button>
-    <button id="stop-timer" style="margin-bottom: 1rem;">stop timer</button>
+    <!-- Difficulty buttons -->
+    <div id="difficulty-section" style="padding-bottom: 3rem; margin-top: 1rem;">
+        <button id="diff-beg">Beginner</button>
+        <button id="diff-int">Intermediate</button>
+        <button id="diff-exp">Expert</button>
+        <!-- <button id="diff-cus">Custom</button> -->
+    </div>
 
-    <form id="user-mines-form">
-        <label for="mines">Number of mines</label>
-        <input type="number" placeholder="Enter a number" name="mines" required>
-    </form>
-    <h2>Test tiles</h2>
-    <p>Note: click a difficulty first</p>
-    <img src="../images/cover_block.png" class="cover-tile">
-    <img src="../images/cover_block_flag.png" class="cover-tile">
-
-    <form id="loginForm" class="login text-center">
-        <h2 style="margin-bottom: 2rem; margin-top: 2rem;">Login</h2>
-
-        <div style="padding: 1rem;" class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" placeholder="Enter email" name="email" required>
-        </div>
-        <div style="padding: 1rem;" class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" placeholder="Enter password" name="password" required>
-        </div>
-
-        <button class="btn btn-primary">Login</button>
-    </form>
-
-    <div id="logout-section" style="justify-self: center;" class="text-center hide-private">
-        <h2 style="margin-top: 2rem; margin-bottom: 2rem;">Logout</h2>
-        <button class="btn btn-danger" id="logout">Log out</button>
+    <!-- Alignment buttons -->
+    <div id="alignments">
+        <h4>Set Alignment</h4>
+        <button id='left-align-btn' class='secondary'>Left</button>
+        <button id='center-align-btn' class='secondary'>Center</button>
+        <button id='right-align-btn' class='secondary'>Right</button>
     </div>
 
     <script src=bundle.js></script>

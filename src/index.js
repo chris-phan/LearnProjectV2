@@ -24,14 +24,12 @@ const firebaseConfig = {
     appId: "1:97339507701:web:8fe6068b10124d61b596bc"
 };
 
-// init firebase app
+// Initializes the firebase app
 initializeApp(firebaseConfig);
 
-// init services
+// Initializes the firebase services used
 const db = getFirestore();
 const auth = getAuth();
-
-
 
 // Global variables
 var difficulty = 'beginner';
@@ -52,13 +50,74 @@ document.addEventListener('mouseup', () => {
     mousedown = false;
 });
 
-
 // Onload:
 generateCoverTiles('beginner');
 setSmileyProperties();
 displayMineCount(10);
 
-// Toggling minefield alignment
+// Toggles the visibility of the log in form
+const loginBtn = document.querySelector('#showLoginBtn');
+loginBtn.addEventListener('click', () => {
+    const loginForm = document.querySelector('#loginForm');
+    if (loginForm.hidden) {
+        loginForm.hidden = false;
+    }
+    else {
+        loginForm.hidden = true;
+    }
+    
+    // Hide the sign up form
+    const signUpForm = document.querySelector('#sign-up-dropdown');
+    if (!signUpForm.hidden) {
+        signUpForm.hidden = true;
+    }
+});
+
+// Hides log in form
+const cancelLogIn = document.querySelector('#loginCancelBtn');
+cancelLogIn.addEventListener('click', () => {
+    const loginForm = document.querySelector('#loginForm');
+    loginForm.reset();
+    loginForm.hidden = true;
+});
+
+// Toggles the visibility of the sign up form
+const signUpBtn = document.querySelector('#showSignUpBtn');
+signUpBtn.addEventListener('click', () => {
+    const signUpDropDown = document.querySelector('#sign-up-dropdown');
+    if (signUpDropDown.hidden) {
+        signUpDropDown.hidden = false;
+    }
+    else {
+        signUpDropDown.hidden = true;
+    }
+
+    // Hides the log in form
+    const loginForm = document.querySelector('#loginForm');
+    if (!loginForm.hidden) {
+        loginForm.hidden = true;
+    }
+});
+
+// Hides sign up form
+const cancelSignUp = document.querySelector('#signUpCancelBtn');
+cancelSignUp.addEventListener('click', () => {
+    const signUpRef = document.querySelector('.add');
+    signUpRef.reset();
+    signUpRef.hidden = true;
+});
+
+// Log out
+const logOutBtn = document.querySelector('#logOutBtn');
+logOutBtn.addEventListener('click', (e) => {
+    if (auth.currentUser !== null) {
+        signOut(auth).catch((err) => {
+            console.error(err.message);
+        });
+    }
+});
+
+// Toggling board alignment
 const leftAlignBtn = document.querySelector('#left-align-btn');
 const centerAlignBtn = document.querySelector('#center-align-btn');
 const rightAlignBtn = document.querySelector('#right-align-btn');
@@ -739,6 +798,7 @@ function setSmileyProperties() {
     });
 }
 
+// Resets the board
 function resetGame() {
     generateCoverTiles(difficulty);
     numClicks = 0;
@@ -750,6 +810,19 @@ function resetGame() {
 
     const smileyBtn = document.querySelector('#smiley-img');
     smileyBtn.src = '../images/smiley.png'; // changes to normal smile after reset
+}
+
+// Returns the number of mines
+function getNumMines(difficulty) {
+    if (difficulty == 'beginner') {
+        return 10;
+    }
+    else if (difficulty == 'intermediate') {
+        return 40;
+    }
+    else if (difficulty == 'expert') {
+        return 99;
+    }
 }
 
 // Code to check win condition
@@ -878,52 +951,6 @@ function updateDisplay(time) {
     }
 }
 
-// Code for testing purposes
-const startTimeBtn = document.querySelector('#start-timer');
-startTimeBtn.addEventListener('click', () => {
-    startTimer();
-});
-
-const stopTimeBtn = document.querySelector('#stop-timer');
-stopTimeBtn.addEventListener('click', () => {
-    const endTime = stopTimer();
-    console.log(endTime);
-});
-
-const showMinesBtn = document.querySelector('#show-mines');
-showMinesBtn.addEventListener('click', () => {
-    const allMines = document.querySelectorAll('[id^="mine"]');
-    for (let i = 0; i < allMines.length; i++) {
-        allMines[i].style.zIndex = 5;
-    }
-    console.log(allMines.length);
-});
-
-// TODO: input validation: numbers greater than 999
-numMines = getNumMines(difficulty);
-const mineFormRef = document.querySelector('#user-mines-form');
-mineFormRef.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    numMines = mineFormRef.mines.value;
-    console.log(numMines);
-
-    displayMineCount(numMines);
-});
-
-// Returns the number of mines according to the difficulty
-function getNumMines(difficulty) {
-    if (difficulty === 'beginner') {
-        return 10;
-    }
-    else if (difficulty === 'intermediate') {
-        return 40;
-    }
-    else if (difficulty === 'expert') {
-        return 99;
-    }
-}
-
 
 // Firebase code
 
@@ -989,52 +1016,35 @@ signUpRef.addEventListener('submit', (e) => {
     });
 });
 
-// Log out
-const logOutBtn = document.querySelector('#logout');
-logOutBtn.addEventListener('click', (e) => {
-    if (auth.currentUser !== null) {
-        signOut(auth).catch((err) => {
-            console.error(err.message);
-        });
-    }
-});
-
-const signUpDropDown = document.querySelector('#sign-up-dropdown');
-
-const signUpBtn = document.querySelector('#sign-up-button');
-signUpBtn.addEventListener('click', () => {
-    signUpDropDown.classList.toggle("collapse");
-});
-
-const cancelSignUp = document.querySelector('#cancel-signup');
-cancelSignUp.addEventListener('click', () => {
-    const signUpRef = document.querySelector('.add');
-    signUpRef.reset();
-    signUpDropDown.classList.toggle("collapse");
-});
-
 // Detects when the user logs in and logs out
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // User has logged in
 
-        // Show log out and hide log in form
-        const logOutSect = document.querySelector('#logout-section')
-        logOutSect.classList.toggle("hide-private");
-        const navbarItems = document.querySelector('#navbar-items');
-        navbarItems.classList.add("hide-private");
-        console.log('user logged in: ', user);
-        loginForm.classList.add("hide-private");
-        signUpRef.reset();
+        // Hides the sign up and log in buttons
+        document.querySelector('#showSignUpBtn').hidden = true;
+        document.querySelector('#showLoginBtn').hidden = true;
+        
+        // Hides the sign up form and log in form
+        const signUpForm = document.querySelector('#sign-up-dropdown');
+        signUpForm.reset();
+        signUpForm.hidden = true;
 
-        // Display 'Welcome (insert username)' in the nav bar
+        const loginForm = document.querySelector('#loginForm');
+        loginForm.reset();
+        loginForm.hidden = true;
+
+        // Shows welcome text with the logged in user's username
         const userDocRef = doc(db, 'users', user.uid);
         getDoc(userDocRef).then((doc) => {
             let username = doc.data().username;
-            const welcome = document.querySelector('#welcome-user');
-            welcome.style.color = 'white';
-            welcome.innerHTML = 'Welcome ' + username;
+            const welcomeText = document.querySelector('#welcomeText');
+            welcomeText.innerHTML = username + '';
+            welcomeText.hidden = false;
         });
+
+        // Shows the log out button
+        document.querySelector('#logOutBtn').hidden = false;
 
         // Updates the user's doc with the log in time
         setDoc(userDocRef, { lastSignedIn: serverTimestamp() }, { merge: true });
@@ -1042,16 +1052,13 @@ onAuthStateChanged(auth, (user) => {
     else {
         // User has logged out
 
-        // Shows the log in and sign up buttons and the log in form
-        loginForm.classList.remove("hide-private");
-        loginForm.reset();
-        const logOutSect = document.querySelector('#logout-section');
-        logOutSect.classList.add("hide-private");
-        const navbarItems = document.querySelector('#navbar-items');
-        navbarItems.classList.remove("hide-private");
-        const welcome = document.querySelector('#welcome-user');
-        welcome.style.color = 'white';
-        welcome.innerHTML = '';
+        // Hides the welcome text and log out button
+        document.querySelector('#welcomeText').hidden = true;
+        document.querySelector('#logOutBtn').hidden = true;
+
+        // Shows the log in and sign up buttons
+        document.querySelector('#showSignUpBtn').hidden = false;
+        document.querySelector('#showLoginBtn').hidden = false;
     }
 });
 

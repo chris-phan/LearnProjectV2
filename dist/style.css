@@ -180,11 +180,10 @@ td:not(.category) {
     padding-bottom: 5px;
     width: auto;
     border: none;
-    /* background-color: #d4d4d4;
-    color: black; */
     font-weight: bold;
     font-size: medium;
     margin-bottom: 1rem;
+    margin-top: 1rem;
 }
 
 /* Invert background and font color when hovered */
@@ -287,6 +286,7 @@ td:not(.category) {
 .lb-toggle-clicked {
     background-color: black;
     color: #d4d4d4;
+    margin-top: 2rem;
 }
 .rank-diff-clicked {
     background-color: crimson;
